@@ -1,9 +1,10 @@
 /**
  * GameScreen Component
- * Orchestrates gameplay, animations, engine state transitions, and UI modals.
+ * Orchestrates gameplay, smooth physical arrow animations, rapid-tap mechanics,
+ * and 500-level progression with Grand Completion celebrations.
  */
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { StyleSheet, View, SafeAreaView } from 'react-native';
 import {
   GameEngineState,
@@ -12,8 +13,9 @@ import {
   undoLastMove,
   resetGameState,
   getHint,
+  ArrowConfig,
 } from '../engine';
-import { CORE_LEVELS, getLevelById } from '../data/levels';
+import { CORE_LEVELS, getLevelById, TOTAL_LEVELS } from '../data/levels';
 import { THEMES, defaultTheme, ColorTheme } from '../theme/colors';
 import {
   loadUserProgress,
@@ -26,6 +28,7 @@ import { audioService } from '../services/audio/audioService';
 import { hapticsService } from '../services/haptics/hapticsService';
 import { admobService } from '../services/ads/admobService';
 import { billingService } from '../services/billing/billingService';
+import { playGamesService } from '../services/playgames/playGamesService';
 import { Board } from '../components/game/Board';
 import { GameHeader } from '../components/game/GameHeader';
 import { GameControls } from '../components/game/GameControls';
@@ -34,9 +37,19 @@ import { LevelSelectModal } from '../components/game/LevelSelectModal';
 import { SettingsModal } from '../components/game/SettingsModal';
 import { RewardedAdPromptModal } from '../components/game/RewardedAdPromptModal';
 import { AdInterstitialModal } from '../components/game/AdInterstitialModal';
+import { GrandCompletionModal } from '../components/game/GrandCompletionModal';
+import { BannerAd } from '../components/ads/BannerAd';
 
-export const GameScreen: React.FC = () => {
-  const [currentLevelId, setCurrentLevelId] = useState(1);
+interface GameScreenProps {
+  initialLevelId?: number;
+  onNavigateHome?: () => void;
+}
+
+export const GameScreen: React.FC<GameScreenProps> = ({
+  initialLevelId = 1,
+  onNavigateHome,
+}) => {
+  const [currentLevelId, setCurrentLevelId] = useState(initialLevelId);
   const [unlockedLevel, setUnlockedLevel] = useState(1);
   const [levelStars, setLevelStars] = useState<Record<number, number>>({});
   const [hintsAvailable, setHintsAvailable] = useState(5);
@@ -47,6 +60,7 @@ export const GameScreen: React.FC = () => {
 
   // Animation & Feedback States
   const [escapingArrowIds, setEscapingArrowIds] = useState<string[]>([]);
+  const [escapingArrows, setEscapingArrows] = useState<ArrowConfig[]>([]);
   const [blockedArrowId, setBlockedArrowId] = useState<string | null>(null);
   const [blockerFlashId, setBlockerFlashId] = useState<string | null>(null);
   const [hintArrowId, setHintArrowId] = useState<string | null>(null);
@@ -54,6 +68,7 @@ export const GameScreen: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isRewardedPromptOpen, setIsRewardedPromptOpen] = useState(false);
   const [isInterstitialOpen, setIsInterstitialOpen] = useState(false);
+  const [isGrandCompletionOpen, setIsGrandCompletionOpen] = useState(false);
 
   // Load Persisted Progress on Initial Mount
   useEffect(() => {
@@ -87,67 +102,97 @@ export const GameScreen: React.FC = () => {
     initializeGameState(currentLevelData)
   );
 
+  // Synchronous engine ref to completely prevent rapid tap race conditions
+  const engineStateRef = useRef<GameEngineState>(gameState);
+  useEffect(() => {
+    engineStateRef.current = gameState;
+  }, [gameState]);
+
   // Switch Level
   const loadLevel = useCallback(
     (levelId: number) => {
       const lvl = getLevelById(levelId);
       if (lvl) {
         setCurrentLevelId(levelId);
-        setGameState(initializeGameState(lvl));
+        const nextEngine = initializeGameState(lvl);
+        engineStateRef.current = nextEngine;
+        setGameState(nextEngine);
         setEscapingArrowIds([]);
+        setEscapingArrows([]);
         setBlockedArrowId(null);
         setBlockerFlashId(null);
         setHintArrowId(null);
+        setIsGrandCompletionOpen(false);
       }
     },
     []
   );
 
-  // Handle Arrow Tap with Physical Motion
+  // Handle Arrow Tap with Synchronous Engine Evaluation & Smooth Physical Flyout
   const handleArrowTap = useCallback(
     (arrowId: string) => {
-      if (escapingArrowIds.includes(arrowId) || gameState.isCompleted) return;
+      const currentEngine = engineStateRef.current;
+      if (currentEngine.isCompleted || escapingArrowIds.includes(arrowId)) return;
 
-      // Evaluate tap using pure engine
-      const { nextState, moveResult } = processTap(gameState, arrowId);
+      const targetArrow = currentEngine.activeArrows.find(a => a.id === arrowId);
+      if (!targetArrow) return;
+
+      // Evaluate tap using pure engine synchronously
+      const { nextState, moveResult } = processTap(currentEngine, arrowId);
 
       if (moveResult.success) {
-        // Clear any active hint
+        // Immediate synchronous commit to eliminate multi-tap lag
+        engineStateRef.current = nextState;
+        setGameState(nextState);
+
+        // Keep flying arrow visible in DOM until flight animation completes
+        setEscapingArrows(prev => [...prev, targetArrow]);
+        setEscapingArrowIds(prev => [...prev, arrowId]);
+
+        // Clear active hint if matching
         if (hintArrowId === arrowId) {
           setHintArrowId(null);
         }
 
-        // Trigger sensory feedback
-        audioService.playEscapePop(gameState.escapedArrowIds.length);
+        // Sensory feedback
+        audioService.playEscapePop(nextState.escapedArrowIds.length);
         hapticsService.vibrateLight();
 
-        // Trigger smooth physical escape flyout
-        setEscapingArrowIds(prev => [...prev, arrowId]);
-
-        // After flyout animation duration (260ms), commit removal into state
+        // Remove from animation track after smooth swoosh (480ms)
         setTimeout(() => {
-          setGameState(nextState);
+          setEscapingArrows(prev => prev.filter(a => a.id !== arrowId));
           setEscapingArrowIds(prev => prev.filter(id => id !== arrowId));
+        }, 480);
 
-          // If level completed, update progression & stars
-          if (nextState.isCompleted) {
-            audioService.playVictoryFanfare();
-            hapticsService.vibrateSuccess();
+        // Level Complete
+        if (nextState.isCompleted) {
+          audioService.playVictoryFanfare();
+          hapticsService.vibrateSuccess();
 
-            const stars = nextState.starsAwarded;
-            setLevelStars(prev => ({
-              ...prev,
-              [currentLevelId]: Math.max(prev[currentLevelId] || 0, stars),
-            }));
-            setUnlockedLevel(prev => Math.max(prev, currentLevelId + 1));
+          const stars = nextState.starsAwarded;
+          setLevelStars(prev => ({
+            ...prev,
+            [currentLevelId]: Math.max(prev[currentLevelId] || 0, stars),
+          }));
+          setUnlockedLevel(prev => Math.max(prev, currentLevelId + 1));
 
-            // Persist to local storage & notify ad pacing
-            recordLevelCompletion(currentLevelId, stars, nextState.totalTaps);
-            admobService.onLevelCompleted();
+          // Persist progress and trigger Google Play & AdMob sync
+          recordLevelCompletion(currentLevelId, stars, nextState.totalTaps);
+          admobService.onLevelCompleted();
+
+          const updatedSolvedCount = Math.max(currentLevelId, unlockedLevel);
+          const threeStarCount = Object.values(levelStars).filter(s => s === 3).length + (stars === 3 ? 1 : 0);
+          playGamesService.syncProgressWithLevelRecords(updatedSolvedCount, threeStarCount);
+
+          // Check if final level 500 completed
+          if (currentLevelId >= TOTAL_LEVELS) {
+            setTimeout(() => {
+              setIsGrandCompletionOpen(true);
+            }, 600);
           }
-        }, 260);
+        }
       } else {
-        // Blocked tap: Trigger sensory feedback, horizontal damped jiggle & blocker highlight flash
+        // Blocked tap: Damped jiggle & blocker highlight flash
         audioService.playBlockedThud();
         hapticsService.vibrateWarning();
 
@@ -161,28 +206,35 @@ export const GameScreen: React.FC = () => {
           setBlockerFlashId(null);
         }, 360);
 
+        engineStateRef.current = nextState;
         setGameState(nextState);
       }
     },
-    [escapingArrowIds, gameState, hintArrowId, currentLevelId]
+    [currentLevelId, escapingArrowIds, hintArrowId, levelStars, unlockedLevel]
   );
 
   // Handle Undo
   const handleUndo = useCallback(() => {
     audioService.playClick();
-    setGameState(prev => undoLastMove(prev));
+    const updated = undoLastMove(engineStateRef.current);
+    engineStateRef.current = updated;
+    setGameState(updated);
     setHintArrowId(null);
   }, []);
 
   // Handle Restart
   const handleRestart = useCallback(() => {
     audioService.playClick();
-    setGameState(resetGameState(gameState));
+    const reset = resetGameState(engineStateRef.current);
+    engineStateRef.current = reset;
+    setGameState(reset);
     setEscapingArrowIds([]);
+    setEscapingArrows([]);
     setBlockedArrowId(null);
     setBlockerFlashId(null);
     setHintArrowId(null);
-  }, [gameState]);
+    setIsGrandCompletionOpen(false);
+  }, []);
 
   // Handle Hint
   const handleHint = useCallback(() => {
@@ -274,10 +326,10 @@ export const GameScreen: React.FC = () => {
 
   const proceedToNextLevel = useCallback(() => {
     const nextId = currentLevelId + 1;
-    if (nextId <= CORE_LEVELS.length) {
+    if (nextId <= TOTAL_LEVELS) {
       loadLevel(nextId);
     } else {
-      loadLevel(1);
+      setIsGrandCompletionOpen(true);
     }
   }, [currentLevelId, loadLevel]);
 
@@ -285,7 +337,11 @@ export const GameScreen: React.FC = () => {
   const handleNextLevel = useCallback(() => {
     audioService.playClick();
 
-    // Check if Interstitial ad is permitted by pacing engine
+    if (currentLevelId >= TOTAL_LEVELS) {
+      setIsGrandCompletionOpen(true);
+      return;
+    }
+
     if (admobService.getPacingEngine().canShowInterstitial().allowed) {
       admobService.getPacingEngine().recordInterstitialShown();
       setIsInterstitialOpen(true);
@@ -293,23 +349,33 @@ export const GameScreen: React.FC = () => {
     }
 
     proceedToNextLevel();
-  }, [proceedToNextLevel]);
+  }, [currentLevelId, proceedToNextLevel]);
 
   const handleDismissInterstitial = useCallback(() => {
     setIsInterstitialOpen(false);
     proceedToNextLevel();
   }, [proceedToNextLevel]);
 
+  // Combined active and flying arrows for silky rendering
+  const renderedArrows = useMemo(() => {
+    return gameState.activeArrows.concat(escapingArrows);
+  }, [gameState.activeArrows, escapingArrows]);
+
+  const totalCalculatedStars = useMemo(() => {
+    return Object.values(levelStars).reduce((sum, s) => sum + s, 0);
+  }, [levelStars]);
+
   return (
     <SafeAreaView style={[styles.rootContainer, { backgroundColor: theme.background }]}>
       <View style={styles.contentWrapper}>
-        {/* Header */}
+        {/* Header with Home Button */}
         <GameHeader
           levelId={gameState.level.id}
           levelTitle={gameState.level.title}
           totalArrows={gameState.level.arrows.length}
           totalTaps={gameState.totalTaps}
           theme={theme}
+          onHomePress={onNavigateHome}
           onOpenLevelSelect={() => setIsLevelSelectOpen(true)}
           onToggleTheme={handleToggleTheme}
           onOpenSettings={() => setIsSettingsOpen(true)}
@@ -320,7 +386,7 @@ export const GameScreen: React.FC = () => {
           <Board
             width={gameState.level.width}
             height={gameState.level.height}
-            activeArrows={gameState.activeArrows}
+            activeArrows={renderedArrows}
             escapingArrowIds={escapingArrowIds}
             hintArrowId={hintArrowId}
             blockedArrowId={blockedArrowId}
@@ -343,10 +409,15 @@ export const GameScreen: React.FC = () => {
         />
       </View>
 
-      {/* Level Select Modal */}
+      {/* Bottom Banner Ad */}
+      <BannerAd
+        adsRemoved={adsRemoved}
+        onRemoveAdsPress={() => setIsSettingsOpen(true)}
+      />
+
+      {/* Level Select Modal (500 Levels Paginated) */}
       <LevelSelectModal
         visible={isLevelSelectOpen}
-        levels={CORE_LEVELS}
         currentLevelId={currentLevelId}
         unlockedLevel={unlockedLevel}
         levelStars={levelStars}
@@ -386,17 +457,34 @@ export const GameScreen: React.FC = () => {
         onDismiss={handleDismissInterstitial}
       />
 
-      {/* Victory Celebration Overlay */}
-      <VictoryOverlay
-        visible={gameState.isCompleted}
-        levelId={gameState.level.id}
-        levelTitle={gameState.level.title}
-        starsAwarded={gameState.starsAwarded || 1}
-        totalTaps={gameState.totalTaps}
-        targetMoves={gameState.level.arrows.length}
-        theme={theme}
-        onNextLevel={handleNextLevel}
-        onReplay={handleRestart}
+      {/* Standard Victory Celebration Overlay (Levels 1 to 499) */}
+      {currentLevelId < TOTAL_LEVELS && (
+        <VictoryOverlay
+          visible={gameState.isCompleted && !isGrandCompletionOpen}
+          levelId={gameState.level.id}
+          levelTitle={gameState.level.title}
+          starsAwarded={gameState.starsAwarded || 1}
+          totalTaps={gameState.totalTaps}
+          targetMoves={gameState.level.arrows.length}
+          theme={theme}
+          onNextLevel={handleNextLevel}
+          onReplay={handleRestart}
+        />
+      )}
+
+      {/* Grand Completion Modal (Level 500 Finale) */}
+      <GrandCompletionModal
+        visible={isGrandCompletionOpen}
+        totalLevels={TOTAL_LEVELS}
+        totalStars={totalCalculatedStars}
+        onHomePress={() => {
+          setIsGrandCompletionOpen(false);
+          if (onNavigateHome) onNavigateHome();
+        }}
+        onSelectLevelPress={() => {
+          setIsGrandCompletionOpen(false);
+          setIsLevelSelectOpen(true);
+        }}
       />
     </SafeAreaView>
   );

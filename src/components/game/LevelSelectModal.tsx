@@ -1,16 +1,24 @@
 /**
  * LevelSelectModal Component
- * Interactive grid drawer to choose and replay any level.
+ * Paginated grid drawer to choose and replay any level up to 500.
  */
 
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { LevelData } from '../../engine/types';
+import React, { useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { TOTAL_LEVELS } from '../../data/levels';
 import { ColorTheme } from '../../theme/colors';
+
+const PAGE_SIZE = 50;
+const TOTAL_PAGES = Math.ceil(TOTAL_LEVELS / PAGE_SIZE);
 
 interface LevelSelectModalProps {
   visible: boolean;
-  levels: readonly LevelData[];
   currentLevelId: number;
   unlockedLevel: number;
   levelStars: Record<number, number>;
@@ -21,7 +29,6 @@ interface LevelSelectModalProps {
 
 export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
   visible,
-  levels,
   currentLevelId,
   unlockedLevel,
   levelStars,
@@ -29,30 +36,104 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
   onSelectLevel,
   onClose,
 }) => {
+  const initialPage = Math.floor((Math.max(1, currentLevelId) - 1) / PAGE_SIZE);
+  const [currentPage, setCurrentPage] = useState<number>(initialPage);
+
   if (!visible) return null;
+
+  const startLevel = currentPage * PAGE_SIZE + 1;
+  const endLevel = Math.min(TOTAL_LEVELS, (currentPage + 1) * PAGE_SIZE);
+
+  const levelsInPage: number[] = [];
+  for (let lvl = startLevel; lvl <= endLevel; lvl++) {
+    levelsInPage.push(lvl);
+  }
 
   return (
     <View style={styles.backdrop}>
-      <View style={[styles.container, { backgroundColor: theme.surface, borderColor: theme.boardBorder }]}>
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: theme.surface, borderColor: theme.boardBorder },
+        ]}
+      >
+        {/* Header */}
         <View style={styles.headerRow}>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>Select Level</Text>
-          <TouchableOpacity onPress={onClose} style={[styles.closeBtn, { borderColor: theme.boardBorder }]}>
+          <View>
+            <Text style={[styles.title, { color: theme.textPrimary }]}>Select Level</Text>
+            <Text style={[styles.subTitle, { color: theme.textSecondary }]}>
+              Levels {startLevel}–{endLevel} of {TOTAL_LEVELS}
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={onClose}
+            style={[styles.closeBtn, { borderColor: theme.boardBorder }]}
+            activeOpacity={0.7}
+          >
             <Text style={[styles.closeBtnText, { color: theme.textSecondary }]}>✕</Text>
           </TouchableOpacity>
         </View>
 
+        {/* Page / Range Tab Switcher */}
+        <View style={styles.tabsWrapper}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
+            {Array.from({ length: TOTAL_PAGES }).map((_, idx) => {
+              const pStart = idx * PAGE_SIZE + 1;
+              const pEnd = Math.min(TOTAL_LEVELS, (idx + 1) * PAGE_SIZE);
+              const isActive = idx === currentPage;
+              const isPageUnlocked = pStart <= unlockedLevel;
+
+              return (
+                <TouchableOpacity
+                  key={idx}
+                  onPress={() => setCurrentPage(idx)}
+                  style={[
+                    styles.tabPill,
+                    {
+                      backgroundColor: isActive
+                        ? theme.accent
+                        : isPageUnlocked
+                        ? 'rgba(255, 255, 255, 0.06)'
+                        : 'rgba(255, 255, 255, 0.02)',
+                      borderColor: isActive ? theme.accent : theme.boardBorder,
+                    },
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <Text
+                    style={[
+                      styles.tabPillText,
+                      {
+                        color: isActive
+                          ? '#0F172A'
+                          : isPageUnlocked
+                          ? theme.textPrimary
+                          : theme.textMuted,
+                        fontWeight: isActive ? '800' : '600',
+                      },
+                    ]}
+                  >
+                    {pStart}-{pEnd}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* 50-Level Grid */}
         <ScrollView contentContainerStyle={styles.gridContainer}>
-          {levels.map(lvl => {
-            const isUnlocked = lvl.id <= unlockedLevel;
-            const isCurrent = lvl.id === currentLevelId;
-            const stars = levelStars[lvl.id] || 0;
+          {levelsInPage.map(lvlId => {
+            const isUnlocked = lvlId <= unlockedLevel;
+            const isCurrent = lvlId === currentLevelId;
+            const stars = levelStars[lvlId] || 0;
 
             return (
               <TouchableOpacity
-                key={lvl.id}
+                key={lvlId}
                 disabled={!isUnlocked}
                 onPress={() => {
-                  onSelectLevel(lvl.id);
+                  onSelectLevel(lvlId);
                   onClose();
                 }}
                 style={[
@@ -67,15 +148,23 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
                     opacity: isUnlocked ? 1 : 0.45,
                   },
                 ]}
+                activeOpacity={0.7}
               >
                 <Text
                   style={[
                     styles.levelNum,
-                    { color: isCurrent ? '#FFFFFF' : isUnlocked ? theme.textPrimary : theme.textMuted },
+                    {
+                      color: isCurrent
+                        ? '#FFFFFF'
+                        : isUnlocked
+                        ? theme.textPrimary
+                        : theme.textMuted,
+                    },
                   ]}
                 >
-                  {lvl.id}
+                  {lvlId}
                 </Text>
+
                 {isUnlocked ? (
                   <View style={styles.starsRow}>
                     {[1, 2, 3].map(s => (
@@ -83,7 +172,14 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
                         key={s}
                         style={[
                           styles.starChar,
-                          { color: s <= stars ? theme.starFilled : isCurrent ? 'rgba(255,255,255,0.4)' : theme.starEmpty },
+                          {
+                            color:
+                              s <= stars
+                                ? theme.starFilled
+                                : isCurrent
+                                ? 'rgba(255,255,255,0.4)'
+                                : theme.starEmpty,
+                          },
                         ]}
                       >
                         ★
@@ -104,44 +200,41 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
 
 const styles = StyleSheet.create({
   backdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 998,
-    padding: 20,
+    zIndex: 100,
+    padding: 16,
   },
   container: {
     width: '100%',
-    maxWidth: 420,
-    maxHeight: '82%',
-    borderRadius: 28,
-    borderWidth: 2,
-    padding: 20,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.25,
-    shadowRadius: 24,
-    elevation: 10,
+    maxWidth: 480,
+    maxHeight: '85%',
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 18,
+    display: 'flex',
+    flexDirection: 'column',
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 4,
+    marginBottom: 12,
   },
   title: {
     fontSize: 20,
-    fontWeight: '900',
+    fontWeight: '800',
+  },
+  subTitle: {
+    fontSize: 12,
+    marginTop: 2,
   },
   closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -150,24 +243,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  tabsWrapper: {
+    marginBottom: 14,
+  },
+  tabsScroll: {
+    gap: 8,
+    paddingVertical: 2,
+  },
+  tabPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  tabPillText: {
+    fontSize: 12,
+  },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    justifyContent: 'center',
+    gap: 10,
+    justifyContent: 'flex-start',
     paddingBottom: 16,
   },
   levelTile: {
-    width: 62,
-    height: 66,
-    borderRadius: 16,
+    width: '17.8%',
+    aspectRatio: 1,
+    borderRadius: 12,
     borderWidth: 1.5,
     justifyContent: 'center',
     alignItems: 'center',
   },
   levelNum: {
-    fontSize: 18,
-    fontWeight: '900',
+    fontSize: 15,
+    fontWeight: '800',
   },
   starsRow: {
     flexDirection: 'row',
@@ -175,10 +284,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   starChar: {
-    fontSize: 10,
+    fontSize: 8,
   },
   lockIcon: {
-    fontSize: 12,
+    fontSize: 10,
     marginTop: 2,
   },
 });

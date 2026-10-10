@@ -2,8 +2,8 @@
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg?logo=typescript)](https://www.typescriptlang.org/)
 [![React Native Web](https://img.shields.io/badge/React%20Native%20Web-0.21-61DAFB.svg?logo=react)](https://necolas.github.io/react-native-web/)
-[![Jest Tests](https://img.shields.io/badge/Tests-45%20Passed-brightgreen.svg?logo=jest)](https://jestjs.io/)
-[![Solvable Levels](https://img.shields.io/badge/Solvable%20Levels-30%2F30-success.svg)]()
+[![Jest Tests](https://img.shields.io/badge/Tests-49%20Passed-brightgreen.svg?logo=jest)](https://jestjs.io/)
+[![Solvable Levels](https://img.shields.io/badge/Solvable%20Levels-500%2F500-success.svg)]()
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Web-orange.svg)]()
 
 > A polished, tactile casual puzzle game built for organic downloads, high retention, and sustainable hybrid monetization.
@@ -18,6 +18,7 @@
   - **Valid Move:** The arrow launches off-screen with satisfying acceleration and an ascending pentatonic pop. Paths open up for blocked arrows behind it.
   - **Invalid Move:** The arrow jiggles with a gentle thud and briefly flashes its blocker. No penalizing timers or life gates.
 - **Star Scoring:** Clear the board matching or beating target moves to earn 3 stars per level.
+- **500 Unique Levels:** 30 handcrafted core levels plus 470 mathematically verified procedural levels with Grand 500 finale.
 - **Tactile 3D Aesthetic:** Molded candy arrow tokens resting on pastel turquoise cushion pads within an iridescent rainbow puzzle tray.
 
 ---
@@ -49,18 +50,20 @@ arrow-escape/
 │   │   ├── solver.ts                 # Memoized backtracking puzzle solver
 │   │   └── hintEngine.ts             # Optimal move hint resolver
 │   ├── data/
-│   │   └── levels/                   # Curated 30-level core pack (packCore.json)
+│   │   └── levels/                   # Curated 30 levels + procedural 500 generator
 │   ├── components/
+│   │   ├── ads/                      # Bottom BannerAd component
 │   │   └── game/                     # UI, Board, ArrowTile, Modals, Overlays
 │   ├── services/
 │   │   ├── audio/                    # Procedural WebAudio synthesizer
 │   │   ├── haptics/                  # Tactile vibration service
 │   │   ├── storage/                  # Offline progress persistence engine
 │   │   ├── ads/                      # AdMob bridge & pacing engine
-│   │   └── billing/                  # Google Play Billing IAP service
-│   ├── screens/                      # Main GameScreen orchestration
+│   │   ├── billing/                  # Google Play Billing IAP service
+│   │   └── playgames/                # Google Play Games achievements bridge
+│   ├── screens/                      # HomeScreen hub & GameScreen gameplay
 │   └── theme/                        # Candy Arcade, Midnight, Neon palettes
-└── tests/                            # 11 Jest test suites covering engine & services
+└── tests/                            # 12 Jest test suites covering engine & services
 ```
 
 ---
@@ -68,8 +71,9 @@ arrow-escape/
 ## 🚀 Quick Start & Development
 
 ### Prerequisites
-- Node.js `v18+` (tested on Node `v24`)
+- Node.js `v18+` (tested on Node `v22` / `v24`)
 - npm `v9+`
+- JDK 17 (for Android native builds)
 
 ### Installation
 ```bash
@@ -89,23 +93,29 @@ npm run dev
 
 ### Running Unit Tests & Level Solvers
 ```bash
-# Run all 11 unit test suites (45 unit tests)
+# Run all 12 unit test suites (49 unit tests)
 npm test
 
 # Run tests with code coverage report
 npm run test:coverage
 
-# Run automated backtracking solver across all 30 core levels
+# Run automated backtracking solver across all core levels
 npm run validate:levels
 ```
 
-### Production Build
+### Production Web & Android Builds
 ```bash
 # Production web bundle build
 npm run build:web
 
-# TypeScript typechecking
-npm run build
+# Sync assets to native Android project
+npx cap sync android
+
+# Build debug APK for testing (ArrowEscape-debug.apk)
+cd android && ./gradlew assembleDebug
+
+# Build release App Bundle for Google Play Store (ArrowEscape-release.aab)
+cd android && ./gradlew bundleRelease
 ```
 
 ---

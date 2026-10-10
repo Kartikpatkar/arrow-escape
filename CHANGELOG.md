@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-10-11
+
+### 🌟 Home Screen, 500 Levels Expansion & Google Play Integration
+
+#### Added
+- **Home Screen & Navigation Hub (`src/screens/HomeScreen.tsx`, `src/App.tsx`)**
+  - Dedicated Home screen with "Continue Level X" / "Start Game" hero button.
+  - Quick action links for Level Select, Google Play Achievements, and Settings.
+  - Player HUD displaying Current Level, Total Stars, and 500 Max Levels capacity.
+  - Save Progress card displaying real-time local and simulated cloud sync status with a manual "Sync Now" trigger.
+  - Home button (🏠) in `GameHeader.tsx` to seamlessly navigate back from gameplay to the Home screen.
+
+- **500-Level Procedural Generation Suite (`src/data/levels/levelGenerator.ts`)**
+  - Seeded Mulberry32 deterministic PRNG generating 100% solvable puzzles from Level 31 to 500.
+  - Reverse constructive placement ensuring guaranteed escape vectors with zero unsolvable boards.
+  - In-memory level caching for instant sub-millisecond level loads.
+  - Paginated level selection drawer (`LevelSelectModal.tsx`) with 10 range tabs (`1-50` through `451-500`).
+  - Automated Jest test suite (`tests/levels/levelGenerator.test.ts`) validating solvability across sample tiers (31, 50, 100, 250, 500).
+
+- **Google Play Games Services & Achievements Bridge (`src/services/playgames/`, `src/components/game/AchievementsModal.tsx`)**
+  - Persistent achievement tracking across 7 tiers: "First Escape" (500 XP), "Pathfinder" (1k XP), "Core Master" (2.5k XP), "Half Century" (5k XP), "Century Club" (10k XP), "Flawless Mind" (3.5k XP), and "Grand Master 500" (25k XP).
+  - Achievements UI modal with GamerTag profile badge, total earned XP counter, and real-time completion progress bars.
+  - Automatic progress synchronization triggered on level victory.
+
+- **Grand 500-Level Completion Finale (`src/components/game/GrandCompletionModal.tsx`)**
+  - Full-screen celebratory modal with trophy badge, completion metrics (500/500 solved, 100% completion), and celebration graphics.
+  - Prevents game from looping back to Level 1 upon completing Level 500.
+
+- **Persistent Bottom Banner Ad (`src/components/ads/BannerAd.tsx`)**
+  - Adaptive AdMob test banner integrated into both Home and Game screens.
+  - Contextual "Remove Ads" action linking directly to IAP purchase; automatically hidden when `adsRemoved` is active.
+
+- **Native Android Launcher Mipmap Assets**
+  - Generated complete mipmap suites (`ic_launcher.png`, `ic_launcher_round.png`, `ic_launcher_foreground.png`) across all densities: `mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`.
+  - Configured Android App Bundle (`ArrowEscape-release.aab`) production release build via `./gradlew bundleRelease`.
+
+#### Fixed & Optimized
+- **Rapid Multi-Tap Stutter & Blocking Lag**: Refactored `GameScreen.tsx` with synchronous engine state commits using `engineStateRef`. Eliminates race conditions where consecutive quick taps were incorrectly evaluated against in-flight arrows.
+- **Arrow Escape Animation Timing**: Extended escape travel distance to 560px and tuned easing curve to `480ms cubic-bezier(0.2, 0.75, 0.25, 1)` with `450ms ease-out` opacity fade for silky, cinematic tactile satisfaction.
+
+---
+
 ## [1.0.0] - 2026-10-10
 
 ### 🚀 Initial Production Release Candidate (Feature Complete)

@@ -3,3 +3,9 @@ dist/
 coverage/
 *.log
 .DS_Store
+*.apk
+*.aab
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties

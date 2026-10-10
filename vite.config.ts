@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      'react-native': 'react-native-web',
+      'react-native': path.resolve(__dirname, 'node_modules/react-native-web'),
       '@': path.resolve(__dirname, './src'),
     },
     extensions: ['.web.tsx', '.web.ts', '.tsx', '.ts', '.web.jsx', '.web.js', '.jsx', '.js'],
