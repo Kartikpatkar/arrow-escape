@@ -13,6 +13,7 @@ interface GameHeaderProps {
   totalArrows: number;
   totalTaps: number;
   theme: ColorTheme;
+  onHomePress?: () => void;
   onOpenLevelSelect?: () => void;
   onToggleTheme?: () => void;
   onOpenSettings?: () => void;
@@ -24,6 +25,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
   totalArrows,
   totalTaps,
   theme,
+  onHomePress,
   onOpenLevelSelect,
   onToggleTheme,
   onOpenSettings,
@@ -37,12 +39,24 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
     <View style={styles.headerContainer}>
       {/* Top Bar with Navigation & Actions */}
       <View style={styles.topRow}>
-        <TouchableOpacity
-          onPress={onOpenLevelSelect}
-          style={[styles.iconButton, { backgroundColor: theme.surface, borderColor: theme.boardBorder }]}
-        >
-          <Text style={[styles.iconText, { color: theme.textPrimary }]}>☰</Text>
-        </TouchableOpacity>
+        <View style={styles.leftButtonsRow}>
+          {onHomePress && (
+            <TouchableOpacity
+              onPress={onHomePress}
+              style={[styles.iconButton, { backgroundColor: theme.surface, borderColor: theme.boardBorder }]}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.iconText, { color: theme.textPrimary }]}>🏠</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            onPress={onOpenLevelSelect}
+            style={[styles.iconButton, { backgroundColor: theme.surface, borderColor: theme.boardBorder }]}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.iconText, { color: theme.textPrimary }]}>☰</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.levelTitleContainer}>
           <Text style={[styles.levelSubtitle, { color: theme.textSecondary }]}>LEVEL {levelId}</Text>
@@ -109,6 +123,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 14,
+  },
+  leftButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   rightButtonsRow: {
     flexDirection: 'row',

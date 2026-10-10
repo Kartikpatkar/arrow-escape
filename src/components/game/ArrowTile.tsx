@@ -99,7 +99,7 @@ export const ArrowTile: React.FC<ArrowTileProps> = ({
   // Handle Escape Flyout Animation
   useEffect(() => {
     if (isEscaping) {
-      const distance = 480;
+      const distance = 560;
       const dirMap: Record<Direction, { x: number; y: number }> = {
         UP: { x: 0, y: -distance },
         DOWN: { x: 0, y: distance },
@@ -144,7 +144,7 @@ export const ArrowTile: React.FC<ArrowTileProps> = ({
           ],
           opacity: flyOffset.opacity,
           transition: isEscaping
-            ? 'transform 300ms cubic-bezier(0.2, 0, 0.1, 1), opacity 260ms ease-out'
+            ? 'transform 480ms cubic-bezier(0.2, 0.75, 0.25, 1), opacity 450ms ease-out'
             : 'transform 80ms ease',
         } as any,
       ]}
