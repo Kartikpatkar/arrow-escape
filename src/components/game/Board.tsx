@@ -141,6 +141,7 @@ export const Board: React.FC<BoardProps> = ({
                   arrow={arrow}
                   cellSize={cellSize}
                   gap={gap}
+                  padding={padding}
                   isEscaping={isEscaping}
                   isBlocked={isBlocked}
                   isHinted={isHinted}

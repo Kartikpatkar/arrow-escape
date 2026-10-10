@@ -13,6 +13,7 @@ interface ArrowTileProps {
   arrow: ArrowConfig;
   cellSize: number;
   gap: number;
+  padding: number;
   isHinted: boolean;
   isBlockerFlash: boolean;
   isEscaping: boolean;
@@ -70,6 +71,7 @@ export const ArrowTile: React.FC<ArrowTileProps> = ({
   arrow,
   cellSize,
   gap,
+  padding,
   isHinted,
   isBlockerFlash,
   isEscaping,
@@ -119,8 +121,8 @@ export const ArrowTile: React.FC<ArrowTileProps> = ({
     LEFT: '270deg',
   };
 
-  const left = arrow.x * (cellSize + gap);
-  const top = arrow.y * (cellSize + gap);
+  const left = padding + arrow.x * (cellSize + gap);
+  const top = padding + arrow.y * (cellSize + gap);
   const palette = CANDY_PALETTES[arrow.direction];
 
   // SVG arrow dimensions scaled proportionally
