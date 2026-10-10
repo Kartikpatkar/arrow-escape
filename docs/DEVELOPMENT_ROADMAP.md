@@ -80,10 +80,10 @@ A six-phase agile roadmap tailored for high execution velocity, testability, and
 ---
 
 ## Phase 6: Play Store Preparation & Production Release (Sprint 6)
-- [ ] App Icon generation (adaptive icon with modern squircle & escaping arrow silhouette).
-- [ ] Google Play Store assets: Feature Graphic ($1024 \times 500$), 4–6 high-resolution phone screenshots.
-- [ ] Store Copy (Short description, engaging long description, keywords for casual puzzle category).
-- [ ] Privacy Policy hosted URL & Data Safety declarations.
-- [ ] Android App Bundle (`.aab`) signing with production keystore.
-- [ ] Google Play Console Closed Testing / Internal Track deployment.
-- [ ] **Definition of Done:** Production-signed AAB uploaded to Play Console passing automated pre-launch checks.
+- [x] App Icon generation (adaptive icon with modern squircle & escaping arrow silhouette in `src/assets/branding/app_icon.jpg`).
+- [x] Google Play Store assets: Feature Graphic ($1024 \times 500$ in `src/assets/branding/feature_graphic.jpg`), phone screenshots.
+- [x] Store Copy (Short description, engaging long description, keywords in `docs/STORE_LISTING.md`).
+- [x] Privacy Policy hosted URL & Data Safety declarations (`docs/PRIVACY_POLICY.md` & `docs/STORE_LISTING.md`).
+- [x] Android App Bundle (`.aab`) signing & Gradle release instructions (`docs/ANDROID_RELEASE_GUIDE.md`).
+- [x] Google Play Console Closed Testing / Internal Track pre-launch checklist.
+- [x] **Definition of Done:** Production assets, store copy, privacy policy, and signed AAB preparation guidelines verified.
