@@ -26,6 +26,15 @@ Comprehensive specifications and architecture blueprints are located in [`docs/`
 6. **[Development Roadmap & Milestones](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/docs/DEVELOPMENT_ROADMAP.md)**  
    *Six-phase development plan, sprint deliverables, definition of done, and Google Play Store pre-launch checklist.*
 
+7. **[Google Play Store Listing & Copy](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/docs/STORE_LISTING.md)**  
+   *Optimized ASO title, short description, full formatted store copy, category tags, and Data Safety questionnaire declarations.*
+
+8. **[Privacy Policy](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/docs/PRIVACY_POLICY.md)**  
+   *Google Play, GDPR, and COPPA compliant privacy policy for AdMob, Play Billing, and offline data storage.*
+
+9. **[Android Production Release Guide](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/docs/ANDROID_RELEASE_GUIDE.md)**  
+   *Keystore generation, Gradle signing credentials, `.aab` production bundle build, and Play Console track deployment.*
+
 ---
 
 ## 🎮 Core Game Mechanics Summary

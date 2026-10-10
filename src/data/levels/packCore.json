@@ -1,0 +1,2774 @@
+[
+  {
+    "id": 1,
+    "packId": "core",
+    "title": "First Escape",
+    "width": 3,
+    "height": 3,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 1,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 1,
+        "y": 1,
+        "direction": "UP"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "packId": "core",
+    "title": "Crossroads",
+    "width": 3,
+    "height": 3,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 2,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a2",
+        "x": 1,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a3",
+        "x": 1,
+        "y": 2,
+        "direction": "DOWN"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "packId": "core",
+    "title": "Four Corners",
+    "width": 4,
+    "height": 4,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a2",
+        "x": 1,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a3",
+        "x": 3,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a4",
+        "x": 2,
+        "y": 2,
+        "direction": "RIGHT"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "packId": "core",
+    "title": "Turnaround",
+    "width": 4,
+    "height": 4,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 1,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 1,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a3",
+        "x": 1,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a4",
+        "x": 2,
+        "y": 2,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a5",
+        "x": 2,
+        "y": 1,
+        "direction": "DOWN"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "packId": "core",
+    "title": "Chain Reaction",
+    "width": 4,
+    "height": 4,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 3,
+        "y": 0,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a2",
+        "x": 2,
+        "y": 0,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a3",
+        "x": 1,
+        "y": 0,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a4",
+        "x": 1,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a5",
+        "x": 1,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a6",
+        "x": 1,
+        "y": 3,
+        "direction": "UP"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "packId": "core",
+    "title": "Perpendicular",
+    "width": 4,
+    "height": 4,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 0,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a3",
+        "x": 2,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a4",
+        "x": 2,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a5",
+        "x": 3,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a6",
+        "x": 1,
+        "y": 2,
+        "direction": "RIGHT"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "packId": "core",
+    "title": "The Box",
+    "width": 4,
+    "height": 4,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 0,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a2",
+        "x": 1,
+        "y": 0,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a3",
+        "x": 3,
+        "y": 0,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a4",
+        "x": 3,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a5",
+        "x": 2,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a6",
+        "x": 1,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a7",
+        "x": 1,
+        "y": 2,
+        "direction": "DOWN"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "packId": "core",
+    "title": "Double Trouble",
+    "width": 5,
+    "height": 5,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a2",
+        "x": 1,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a3",
+        "x": 4,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a4",
+        "x": 3,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a5",
+        "x": 2,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a6",
+        "x": 2,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a7",
+        "x": 2,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a8",
+        "x": 2,
+        "y": 3,
+        "direction": "DOWN"
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "packId": "core",
+    "title": "Pinwheel",
+    "width": 5,
+    "height": 5,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 1,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 1,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a3",
+        "x": 3,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a4",
+        "x": 4,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a5",
+        "x": 3,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a6",
+        "x": 1,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a7",
+        "x": 0,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a8",
+        "x": 2,
+        "y": 2,
+        "direction": "DOWN"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "packId": "core",
+    "title": "Corridor Run",
+    "width": 5,
+    "height": 5,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 4,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 4,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a3",
+        "x": 4,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a4",
+        "x": 3,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a5",
+        "x": 2,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a6",
+        "x": 1,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a7",
+        "x": 1,
+        "y": 3,
+        "direction": "UP"
+      },
+      {
+        "id": "a8",
+        "x": 1,
+        "y": 4,
+        "direction": "UP"
+      },
+      {
+        "id": "a9",
+        "x": 0,
+        "y": 4,
+        "direction": "RIGHT"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "packId": "core",
+    "title": "The Fork",
+    "width": 5,
+    "height": 5,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a2",
+        "x": 1,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a3",
+        "x": 2,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a4",
+        "x": 2,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a5",
+        "x": 3,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a6",
+        "x": 4,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a7",
+        "x": 2,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a8",
+        "x": 2,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a9",
+        "x": 2,
+        "y": 2,
+        "direction": "DOWN"
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "packId": "core",
+    "title": "Zigzag",
+    "width": 5,
+    "height": 5,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 0,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a2",
+        "x": 2,
+        "y": 0,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a3",
+        "x": 2,
+        "y": 1,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a4",
+        "x": 2,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a5",
+        "x": 1,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a6",
+        "x": 4,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a7",
+        "x": 4,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a8",
+        "x": 4,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a9",
+        "x": 3,
+        "y": 4,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a10",
+        "x": 0,
+        "y": 4,
+        "direction": "LEFT"
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "packId": "core",
+    "title": "Gridlock",
+    "width": 5,
+    "height": 5,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 1,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a3",
+        "x": 1,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a4",
+        "x": 3,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a5",
+        "x": 4,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a6",
+        "x": 3,
+        "y": 2,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a7",
+        "x": 3,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a8",
+        "x": 2,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a9",
+        "x": 0,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a10",
+        "x": 0,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a11",
+        "x": 2,
+        "y": 2,
+        "direction": "UP"
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "packId": "core",
+    "title": "Vortex",
+    "width": 5,
+    "height": 5,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 4,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a2",
+        "x": 0,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a3",
+        "x": 1,
+        "y": 2,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a4",
+        "x": 0,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a5",
+        "x": 2,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a6",
+        "x": 1,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a7",
+        "x": 2,
+        "y": 2,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a8",
+        "x": 3,
+        "y": 3,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a9",
+        "x": 3,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a10",
+        "x": 1,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a11",
+        "x": 4,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a12",
+        "x": 3,
+        "y": 1,
+        "direction": "RIGHT"
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "packId": "core",
+    "title": "Crosshairs",
+    "width": 5,
+    "height": 5,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 2,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 2,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a3",
+        "x": 0,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a4",
+        "x": 1,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a5",
+        "x": 3,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a6",
+        "x": 4,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a7",
+        "x": 2,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a8",
+        "x": 2,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a9",
+        "x": 1,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a10",
+        "x": 3,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a11",
+        "x": 1,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a12",
+        "x": 3,
+        "y": 3,
+        "direction": "DOWN"
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "packId": "core",
+    "title": "The Labyrinth",
+    "width": 5,
+    "height": 5,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a2",
+        "x": 2,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a3",
+        "x": 2,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a4",
+        "x": 3,
+        "y": 0,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a5",
+        "x": 4,
+        "y": 0,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a6",
+        "x": 4,
+        "y": 2,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a7",
+        "x": 4,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a8",
+        "x": 3,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a9",
+        "x": 2,
+        "y": 3,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a10",
+        "x": 1,
+        "y": 3,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a11",
+        "x": 1,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a12",
+        "x": 0,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a13",
+        "x": 2,
+        "y": 2,
+        "direction": "UP"
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "packId": "core",
+    "title": "Traffic Jam",
+    "width": 6,
+    "height": 6,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 1,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a3",
+        "x": 2,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a4",
+        "x": 0,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a5",
+        "x": 1,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a6",
+        "x": 3,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a7",
+        "x": 4,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a8",
+        "x": 5,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a9",
+        "x": 2,
+        "y": 2,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a10",
+        "x": 2,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a11",
+        "x": 4,
+        "y": 3,
+        "direction": "UP"
+      },
+      {
+        "id": "a12",
+        "x": 4,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a13",
+        "x": 3,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a14",
+        "x": 1,
+        "y": 4,
+        "direction": "LEFT"
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "packId": "core",
+    "title": "Tangled Web",
+    "width": 6,
+    "height": 6,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 5,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 5,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a3",
+        "x": 0,
+        "y": 5,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a4",
+        "x": 1,
+        "y": 5,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a5",
+        "x": 2,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a6",
+        "x": 3,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a7",
+        "x": 4,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a8",
+        "x": 3,
+        "y": 2,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a9",
+        "x": 3,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a10",
+        "x": 2,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a11",
+        "x": 1,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a12",
+        "x": 1,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a13",
+        "x": 2,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a14",
+        "x": 4,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a15",
+        "x": 5,
+        "y": 4,
+        "direction": "RIGHT"
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "packId": "core",
+    "title": "Tight Spiral",
+    "width": 6,
+    "height": 6,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 1,
+        "y": 5,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 2,
+        "y": 0,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a3",
+        "x": 2,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a4",
+        "x": 3,
+        "y": 1,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a5",
+        "x": 3,
+        "y": 5,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a6",
+        "x": 2,
+        "y": 3,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a7",
+        "x": 4,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a8",
+        "x": 3,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a9",
+        "x": 4,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a10",
+        "x": 1,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a11",
+        "x": 0,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a12",
+        "x": 4,
+        "y": 0,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a13",
+        "x": 2,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a14",
+        "x": 4,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a15",
+        "x": 0,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a16",
+        "x": 5,
+        "y": 4,
+        "direction": "UP"
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "packId": "core",
+    "title": "Centrifuge",
+    "width": 6,
+    "height": 6,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 4,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a2",
+        "x": 0,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a3",
+        "x": 3,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a4",
+        "x": 2,
+        "y": 2,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a5",
+        "x": 5,
+        "y": 3,
+        "direction": "UP"
+      },
+      {
+        "id": "a6",
+        "x": 3,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a7",
+        "x": 5,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a8",
+        "x": 2,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a9",
+        "x": 4,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a10",
+        "x": 0,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a11",
+        "x": 4,
+        "y": 5,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a12",
+        "x": 2,
+        "y": 5,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a13",
+        "x": 5,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a14",
+        "x": 2,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a15",
+        "x": 1,
+        "y": 4,
+        "direction": "UP"
+      },
+      {
+        "id": "a16",
+        "x": 1,
+        "y": 5,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a17",
+        "x": 2,
+        "y": 0,
+        "direction": "RIGHT"
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "packId": "core",
+    "title": "Matrix Overload",
+    "width": 6,
+    "height": 6,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 1,
+        "y": 0,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a3",
+        "x": 3,
+        "y": 0,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a4",
+        "x": 5,
+        "y": 0,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a5",
+        "x": 5,
+        "y": 2,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a6",
+        "x": 5,
+        "y": 5,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a7",
+        "x": 3,
+        "y": 5,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a8",
+        "x": 1,
+        "y": 5,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a9",
+        "x": 0,
+        "y": 5,
+        "direction": "UP"
+      },
+      {
+        "id": "a10",
+        "x": 0,
+        "y": 3,
+        "direction": "UP"
+      },
+      {
+        "id": "a11",
+        "x": 1,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a12",
+        "x": 2,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a13",
+        "x": 4,
+        "y": 1,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a14",
+        "x": 4,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a15",
+        "x": 4,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a16",
+        "x": 2,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a17",
+        "x": 1,
+        "y": 4,
+        "direction": "UP"
+      },
+      {
+        "id": "a18",
+        "x": 2,
+        "y": 2,
+        "direction": "RIGHT"
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "packId": "core",
+    "title": "The Gauntlet",
+    "width": 6,
+    "height": 6,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a2",
+        "x": 1,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a3",
+        "x": 2,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a4",
+        "x": 2,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a5",
+        "x": 3,
+        "y": 0,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a6",
+        "x": 5,
+        "y": 0,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a7",
+        "x": 5,
+        "y": 2,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a8",
+        "x": 5,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a9",
+        "x": 4,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a10",
+        "x": 3,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a11",
+        "x": 3,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a12",
+        "x": 1,
+        "y": 4,
+        "direction": "UP"
+      },
+      {
+        "id": "a13",
+        "x": 1,
+        "y": 3,
+        "direction": "UP"
+      },
+      {
+        "id": "a14",
+        "x": 3,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a15",
+        "x": 4,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a16",
+        "x": 3,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a17",
+        "x": 2,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a18",
+        "x": 0,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a19",
+        "x": 4,
+        "y": 0,
+        "direction": "UP"
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "packId": "core",
+    "title": "Clockwork",
+    "width": 6,
+    "height": 6,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 3,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 5,
+        "y": 5,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a3",
+        "x": 2,
+        "y": 4,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a4",
+        "x": 0,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a5",
+        "x": 2,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a6",
+        "x": 4,
+        "y": 3,
+        "direction": "UP"
+      },
+      {
+        "id": "a7",
+        "x": 3,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a8",
+        "x": 4,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a9",
+        "x": 4,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a10",
+        "x": 4,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a11",
+        "x": 2,
+        "y": 5,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a12",
+        "x": 1,
+        "y": 2,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a13",
+        "x": 4,
+        "y": 4,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a14",
+        "x": 1,
+        "y": 0,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a15",
+        "x": 1,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a16",
+        "x": 5,
+        "y": 3,
+        "direction": "UP"
+      },
+      {
+        "id": "a17",
+        "x": 5,
+        "y": 4,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a18",
+        "x": 4,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a19",
+        "x": 3,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a20",
+        "x": 0,
+        "y": 3,
+        "direction": "LEFT"
+      }
+    ]
+  },
+  {
+    "id": 24,
+    "packId": "core",
+    "title": "Convergence",
+    "width": 6,
+    "height": 6,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 2,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a2",
+        "x": 0,
+        "y": 4,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a3",
+        "x": 3,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a4",
+        "x": 2,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a5",
+        "x": 4,
+        "y": 0,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a6",
+        "x": 2,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a7",
+        "x": 2,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a8",
+        "x": 5,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a9",
+        "x": 5,
+        "y": 4,
+        "direction": "UP"
+      },
+      {
+        "id": "a10",
+        "x": 5,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a11",
+        "x": 3,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a12",
+        "x": 0,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a13",
+        "x": 4,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a14",
+        "x": 1,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a15",
+        "x": 0,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a16",
+        "x": 3,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a17",
+        "x": 0,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a18",
+        "x": 5,
+        "y": 0,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a19",
+        "x": 1,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a20",
+        "x": 4,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a21",
+        "x": 5,
+        "y": 1,
+        "direction": "RIGHT"
+      }
+    ]
+  },
+  {
+    "id": 25,
+    "packId": "core",
+    "title": "The Fortress",
+    "width": 7,
+    "height": 7,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 2,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a3",
+        "x": 4,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a4",
+        "x": 6,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a5",
+        "x": 0,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a6",
+        "x": 2,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a7",
+        "x": 4,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a8",
+        "x": 6,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a9",
+        "x": 0,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a10",
+        "x": 2,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a11",
+        "x": 4,
+        "y": 4,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a12",
+        "x": 6,
+        "y": 4,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a13",
+        "x": 0,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a14",
+        "x": 2,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a15",
+        "x": 4,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a16",
+        "x": 6,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a17",
+        "x": 1,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a18",
+        "x": 3,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a19",
+        "x": 5,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a20",
+        "x": 1,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a21",
+        "x": 3,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a22",
+        "x": 5,
+        "y": 5,
+        "direction": "DOWN"
+      }
+    ]
+  },
+  {
+    "id": 26,
+    "packId": "core",
+    "title": "Nexus",
+    "width": 7,
+    "height": 7,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 5,
+        "y": 0,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a2",
+        "x": 5,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a3",
+        "x": 4,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a4",
+        "x": 0,
+        "y": 6,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a5",
+        "x": 6,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a6",
+        "x": 0,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a7",
+        "x": 2,
+        "y": 5,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a8",
+        "x": 6,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a9",
+        "x": 1,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a10",
+        "x": 3,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a11",
+        "x": 4,
+        "y": 6,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a12",
+        "x": 1,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a13",
+        "x": 0,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a14",
+        "x": 6,
+        "y": 4,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a15",
+        "x": 1,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a16",
+        "x": 5,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a17",
+        "x": 5,
+        "y": 6,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a18",
+        "x": 4,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a19",
+        "x": 2,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a20",
+        "x": 3,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a21",
+        "x": 3,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a22",
+        "x": 3,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a23",
+        "x": 2,
+        "y": 3,
+        "direction": "UP"
+      },
+      {
+        "id": "a24",
+        "x": 0,
+        "y": 3,
+        "direction": "LEFT"
+      }
+    ]
+  },
+  {
+    "id": 27,
+    "packId": "core",
+    "title": "Iron Maze",
+    "width": 7,
+    "height": 7,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 4,
+        "y": 4,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 0,
+        "y": 0,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a3",
+        "x": 6,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a4",
+        "x": 4,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a5",
+        "x": 4,
+        "y": 6,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a6",
+        "x": 6,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a7",
+        "x": 5,
+        "y": 3,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a8",
+        "x": 2,
+        "y": 5,
+        "direction": "UP"
+      },
+      {
+        "id": "a9",
+        "x": 4,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a10",
+        "x": 4,
+        "y": 5,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a11",
+        "x": 4,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a12",
+        "x": 3,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a13",
+        "x": 0,
+        "y": 6,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a14",
+        "x": 5,
+        "y": 4,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a15",
+        "x": 2,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a16",
+        "x": 6,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a17",
+        "x": 6,
+        "y": 6,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a18",
+        "x": 2,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a19",
+        "x": 5,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a20",
+        "x": 5,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a21",
+        "x": 1,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a22",
+        "x": 3,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a23",
+        "x": 1,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a24",
+        "x": 2,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a25",
+        "x": 3,
+        "y": 1,
+        "direction": "UP"
+      }
+    ]
+  },
+  {
+    "id": 28,
+    "packId": "core",
+    "title": "Entanglement",
+    "width": 7,
+    "height": 7,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a2",
+        "x": 2,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a3",
+        "x": 4,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a4",
+        "x": 6,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a5",
+        "x": 1,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a6",
+        "x": 1,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a7",
+        "x": 5,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a8",
+        "x": 5,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a9",
+        "x": 0,
+        "y": 5,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a10",
+        "x": 2,
+        "y": 5,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a11",
+        "x": 4,
+        "y": 5,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a12",
+        "x": 6,
+        "y": 5,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a13",
+        "x": 1,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a14",
+        "x": 1,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a15",
+        "x": 5,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a16",
+        "x": 5,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a17",
+        "x": 3,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a18",
+        "x": 3,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a19",
+        "x": 3,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a20",
+        "x": 3,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a21",
+        "x": 0,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a22",
+        "x": 1,
+        "y": 3,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a23",
+        "x": 5,
+        "y": 3,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a24",
+        "x": 6,
+        "y": 3,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a25",
+        "x": 2,
+        "y": 3,
+        "direction": "UP"
+      },
+      {
+        "id": "a26",
+        "x": 4,
+        "y": 3,
+        "direction": "DOWN"
+      }
+    ]
+  },
+  {
+    "id": 29,
+    "packId": "core",
+    "title": "The Crucible",
+    "width": 7,
+    "height": 7,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 0,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a2",
+        "x": 6,
+        "y": 0,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a3",
+        "x": 0,
+        "y": 6,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a4",
+        "x": 6,
+        "y": 6,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a5",
+        "x": 1,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a6",
+        "x": 2,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a7",
+        "x": 4,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a8",
+        "x": 5,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a9",
+        "x": 1,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a10",
+        "x": 2,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a11",
+        "x": 4,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a12",
+        "x": 5,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a13",
+        "x": 1,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a14",
+        "x": 1,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a15",
+        "x": 5,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a16",
+        "x": 5,
+        "y": 4,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a17",
+        "x": 2,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a18",
+        "x": 3,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a19",
+        "x": 4,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a20",
+        "x": 4,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a21",
+        "x": 4,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a22",
+        "x": 3,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a23",
+        "x": 2,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a24",
+        "x": 2,
+        "y": 3,
+        "direction": "UP"
+      },
+      {
+        "id": "a25",
+        "x": 3,
+        "y": 1,
+        "direction": "UP"
+      },
+      {
+        "id": "a26",
+        "x": 3,
+        "y": 5,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a27",
+        "x": 3,
+        "y": 3,
+        "direction": "RIGHT"
+      }
+    ]
+  },
+  {
+    "id": 30,
+    "packId": "core",
+    "title": "Grand Master Escape",
+    "width": 7,
+    "height": 7,
+    "arrows": [
+      {
+        "id": "a1",
+        "x": 0,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a2",
+        "x": 1,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a3",
+        "x": 2,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a4",
+        "x": 4,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a5",
+        "x": 5,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a6",
+        "x": 6,
+        "y": 0,
+        "direction": "UP"
+      },
+      {
+        "id": "a7",
+        "x": 0,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a8",
+        "x": 1,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a9",
+        "x": 2,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a10",
+        "x": 4,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a11",
+        "x": 5,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a12",
+        "x": 6,
+        "y": 6,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a13",
+        "x": 0,
+        "y": 1,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a14",
+        "x": 0,
+        "y": 2,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a15",
+        "x": 0,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a16",
+        "x": 0,
+        "y": 5,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a17",
+        "x": 6,
+        "y": 1,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a18",
+        "x": 6,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a19",
+        "x": 6,
+        "y": 4,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a20",
+        "x": 6,
+        "y": 5,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a21",
+        "x": 2,
+        "y": 2,
+        "direction": "UP"
+      },
+      {
+        "id": "a22",
+        "x": 3,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a23",
+        "x": 4,
+        "y": 2,
+        "direction": "RIGHT"
+      },
+      {
+        "id": "a24",
+        "x": 4,
+        "y": 3,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a25",
+        "x": 4,
+        "y": 4,
+        "direction": "DOWN"
+      },
+      {
+        "id": "a26",
+        "x": 3,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a27",
+        "x": 2,
+        "y": 4,
+        "direction": "LEFT"
+      },
+      {
+        "id": "a28",
+        "x": 2,
+        "y": 3,
+        "direction": "UP"
+      }
+    ]
+  }
+]
