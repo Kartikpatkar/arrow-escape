@@ -62,9 +62,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Pastel turquoise cushion pads (`#38C2C9`) under each arrow token.
   - Tactile toy tray with iridescent rainbow border frame, golden corner star studs (`★`), and recessed well slots (`?`).
   - Cosmic aurora backdrop with twilight cyan gradient in `GameScreen.tsx`.
-  - Fixed coordinate positioning ensuring arrow tokens are perfectly concentric with grid slots.
+
+#### Fixed
+- **Grid Alignment & Centering (`ArrowTile.tsx`, `Board.tsx`)**: Fixed coordinate offset where arrows were floating off-center by 22px due to missing board padding in `ArrowTile` position calculation. Added `padding={padding}` prop passing and synchronized formulas:
+  ```ts
+  left = padding + arrow.x * (cellSize + gap);
+  top  = padding + arrow.y * (cellSize + gap);
+  ```
+  Tokens are now 100% concentric with their recessed board well slots.
+- **Identifier Collision (`admobService.ts`)**: Resolved duplicate identifier error between private state variable `isInterstitialLoaded` and public getter `isInterstitialLoaded()`, renaming private field to `_isInterstitialLoaded`. Restored clean Vite HMR and dev bundling.
 
 #### Verified
 - 11 unit test suites, 45 tests passing (100% green).
 - 30/30 level solver validation passed in 12ms.
-- Web production bundle compiles cleanly via Vite.
+- Web production bundle compiles cleanly via Vite in ~72ms.
+- End-to-end interactive browser testing verified on `http://localhost:3000/` (Level 1 clear, Level 2 progression, hint golden aura, victory overlay confetti, settings toggles).
