@@ -22,14 +22,14 @@ A six-phase agile roadmap tailored for high execution velocity, testability, and
 ---
 
 ## Phase 1: Core Engine & Automated Solver (Sprint 1)
-- [ ] Initialize repository with TypeScript & Jest configuration.
-- [ ] Implement `engine/types.ts` (Direction, Arrow, Grid, MoveResult).
-- [ ] Implement `engine/raycaster.ts` (boundary checks, obstacle detection).
-- [ ] Implement `engine/moveValidator.ts` (evaluate move, generate blocking diagnostic).
-- [ ] Implement `engine/solver.ts` (recursive backtracking solver, find shortest paths).
-- [ ] Implement `engine/hintEngine.ts` (candidate unblocked move resolver).
-- [ ] Implement CLI tool `scripts/validateLevels.ts` to verify level datasets automatically.
-- [ ] **Definition of Done:** 100% test coverage on engine logic; CLI passes validation on sample puzzles.
+- [x] Initialize repository with TypeScript & Jest configuration.
+- [x] Implement `engine/types.ts` (Direction, Arrow, Grid, MoveResult).
+- [x] Implement `engine/raycaster.ts` (boundary checks, obstacle detection).
+- [x] Implement `engine/moveValidator.ts` (evaluate move, generate blocking diagnostic).
+- [x] Implement `engine/solver.ts` (recursive backtracking solver, find shortest paths).
+- [x] Implement `engine/hintEngine.ts` (candidate unblocked move resolver).
+- [x] Implement CLI tool `scripts/validateLevels.ts` to verify level datasets automatically.
+- [x] **Definition of Done:** 100% test coverage on engine logic; CLI passes validation on sample puzzles.
 
 ---
 
