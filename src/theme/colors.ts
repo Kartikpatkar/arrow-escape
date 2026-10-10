@@ -28,24 +28,24 @@ export interface ColorTheme {
 export const THEMES: Record<string, ColorTheme> = {
   dawn: {
     id: 'dawn',
-    name: 'Dawn Softness (Default)',
-    background: '#F8F9FD',
-    surface: '#FFFFFF',
-    boardBg: '#ECEFF8',
-    boardBorder: '#E2E8F0',
-    tileBg: '#F1F4FA',
-    arrowBody: '#4F46E5', // vibrant indigo
+    name: 'Candy Arcade (Feature Graphic)',
+    background: '#0E1F33', // Deep cosmic aurora cyan/indigo
+    surface: '#15324E',
+    boardBg: '#1B6474', // Vibrant turquoise toy tray
+    boardBorder: '#4DD4DC', // Cyan gloss bezel rim
+    tileBg: '#124856', // Recessed empty well slots
+    arrowBody: '#38BDF8',
     arrowHead: '#FFFFFF',
-    arrowShadow: 'rgba(79, 70, 229, 0.25)',
-    textPrimary: '#1E293B',
-    textSecondary: '#64748B',
-    textMuted: '#94A3B8',
-    accent: '#6366F1',
-    hintGlow: '#F59E0B',
-    blockedFlash: '#EF4444',
-    victoryGlow: '#10B981',
-    starFilled: '#F59E0B',
-    starEmpty: '#CBD5E1',
+    arrowShadow: 'rgba(77, 212, 220, 0.4)',
+    textPrimary: '#FFFFFF',
+    textSecondary: '#A5F3FC',
+    textMuted: '#67E8F9',
+    accent: '#F59E0B',
+    hintGlow: '#FDE047',
+    blockedFlash: '#FF477E',
+    victoryGlow: '#34D399',
+    starFilled: '#FBBF24',
+    starEmpty: '#33586C',
   },
   midnight: {
     id: 'midnight',
