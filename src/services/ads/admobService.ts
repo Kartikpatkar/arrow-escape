@@ -10,7 +10,7 @@ import { updateHintsAvailable } from '../storage/progressStorage';
 export class AdMobService implements IAdsService {
   private pacingEngine: AdsPacingEngine;
   private isRewardedLoaded: boolean = true;
-  private isInterstitialLoaded: boolean = true;
+  private _isInterstitialLoaded: boolean = true;
   private onShowInterstitialModal: (() => Promise<void>) | null = null;
   private onShowRewardedModal: (() => Promise<boolean>) | null = null;
 
@@ -31,7 +31,7 @@ export class AdMobService implements IAdsService {
   }
 
   public isInterstitialLoaded(): boolean {
-    return this.isInterstitialLoaded;
+    return this._isInterstitialLoaded;
   }
 
   public setAdsRemoved(removed: boolean): void {
