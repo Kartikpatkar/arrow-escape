@@ -39,14 +39,19 @@ import { RewardedAdPromptModal } from '../components/game/RewardedAdPromptModal'
 import { AdInterstitialModal } from '../components/game/AdInterstitialModal';
 import { GrandCompletionModal } from '../components/game/GrandCompletionModal';
 import { BannerAd } from '../components/ads/BannerAd';
+import { dailyChallengeService, getLocalDateString } from '../services/daily/dailyChallengeService';
 
 interface GameScreenProps {
   initialLevelId?: number;
+  isDailyChallenge?: boolean;
+  dailyDateStr?: string;
   onNavigateHome?: () => void;
 }
 
 export const GameScreen: React.FC<GameScreenProps> = ({
   initialLevelId = 1,
+  isDailyChallenge = false,
+  dailyDateStr,
   onNavigateHome,
 }) => {
   const [currentLevelId, setCurrentLevelId] = useState(initialLevelId);
@@ -95,8 +100,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   // Initialize Level Engine
   const currentLevelData = useMemo(() => {
+    if (isDailyChallenge) {
+      return dailyChallengeService.getDailyPuzzle(dailyDateStr || getLocalDateString());
+    }
     return getLevelById(currentLevelId) || CORE_LEVELS[0];
-  }, [currentLevelId]);
+  }, [currentLevelId, isDailyChallenge, dailyDateStr]);
 
   const [gameState, setGameState] = useState<GameEngineState>(() =>
     initializeGameState(currentLevelData)
@@ -177,7 +185,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           setUnlockedLevel(prev => Math.max(prev, currentLevelId + 1));
 
           // Persist progress and trigger Google Play & AdMob sync
-          recordLevelCompletion(currentLevelId, stars, nextState.totalTaps);
+          if (isDailyChallenge) {
+            const dateStr = dailyDateStr || getLocalDateString();
+            dailyChallengeService.recordDailyCompletion(dateStr, stars, nextState.totalTaps);
+          } else {
+            recordLevelCompletion(currentLevelId, stars, nextState.totalTaps);
+          }
           admobService.onLevelCompleted();
 
           const updatedSolvedCount = Math.max(currentLevelId, unlockedLevel);
@@ -457,17 +470,17 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         onDismiss={handleDismissInterstitial}
       />
 
-      {/* Standard Victory Celebration Overlay (Levels 1 to 499) */}
+      {/* Standard Victory Celebration Overlay (Levels 1 to 499 & Daily) */}
       {currentLevelId < TOTAL_LEVELS && (
         <VictoryOverlay
           visible={gameState.isCompleted && !isGrandCompletionOpen}
-          levelId={gameState.level.id}
-          levelTitle={gameState.level.title}
+          levelId={isDailyChallenge ? 1 : gameState.level.id}
+          levelTitle={isDailyChallenge ? 'Daily Challenge' : gameState.level.title}
           starsAwarded={gameState.starsAwarded || 1}
           totalTaps={gameState.totalTaps}
           targetMoves={gameState.level.arrows.length}
           theme={theme}
-          onNextLevel={handleNextLevel}
+          onNextLevel={isDailyChallenge && onNavigateHome ? onNavigateHome : handleNextLevel}
           onReplay={handleRestart}
         />
       )}

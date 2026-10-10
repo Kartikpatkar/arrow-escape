@@ -11,11 +11,18 @@ import { GameScreen } from './screens/GameScreen';
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<'home' | 'game'>('home');
   const [activeLevelId, setActiveLevelId] = useState<number>(1);
+  const [isDailyChallenge, setIsDailyChallenge] = useState<boolean>(false);
+  const [dailyDateStr, setDailyDateStr] = useState<string | undefined>(undefined);
 
-  const handleStartGame = useCallback((levelId: number) => {
-    setActiveLevelId(levelId);
-    setCurrentScreen('game');
-  }, []);
+  const handleStartGame = useCallback(
+    (levelId: number, isDaily?: boolean, dailyDate?: string) => {
+      setActiveLevelId(levelId);
+      setIsDailyChallenge(!!isDaily);
+      setDailyDateStr(dailyDate);
+      setCurrentScreen('game');
+    },
+    []
+  );
 
   const handleNavigateHome = useCallback(() => {
     setCurrentScreen('home');
@@ -27,8 +34,10 @@ export default function App() {
         <HomeScreen onStartGame={handleStartGame} />
       ) : (
         <GameScreen
-          key={activeLevelId}
+          key={`${activeLevelId}_${isDailyChallenge ? dailyDateStr : 'std'}`}
           initialLevelId={activeLevelId}
+          isDailyChallenge={isDailyChallenge}
+          dailyDateStr={dailyDateStr}
           onNavigateHome={handleNavigateHome}
         />
       )}

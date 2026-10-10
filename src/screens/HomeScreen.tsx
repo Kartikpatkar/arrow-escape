@@ -28,9 +28,11 @@ import { LevelSelectModal } from '../components/game/LevelSelectModal';
 import { AchievementsModal } from '../components/game/AchievementsModal';
 import { SettingsModal } from '../components/game/SettingsModal';
 import { BannerAd } from '../components/ads/BannerAd';
+import { DailyChallengeCard } from '../components/daily/DailyChallengeCard';
+import { getLocalDateString } from '../services/daily/dailyChallengeService';
 
 interface HomeScreenProps {
-  onStartGame: (levelId: number) => void;
+  onStartGame: (levelId: number, isDaily?: boolean, dailyDate?: string) => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
@@ -160,6 +162,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
             <Text style={styles.hudLabel}>Max Levels</Text>
           </View>
         </View>
+
+        {/* Daily Puzzle Challenge Card */}
+        <DailyChallengeCard
+          onPlayDaily={() => {
+            audioService.playClick();
+            onStartGame(9999, true, getLocalDateString());
+          }}
+        />
 
         {/* Main Action Menu */}
         <View style={styles.menuContainer}>
