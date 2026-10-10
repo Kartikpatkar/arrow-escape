@@ -16,6 +16,7 @@ export interface UserProgressData {
   selectedTheme: string;
   soundEnabled: boolean;
   hapticsEnabled: boolean;
+  adsRemoved: boolean;
 }
 
 export const STORAGE_KEY = '@arrow_escape_user_progress_v1';
@@ -27,6 +28,7 @@ export const DEFAULT_PROGRESS: UserProgressData = {
   selectedTheme: 'dawn',
   soundEnabled: true,
   hapticsEnabled: true,
+  adsRemoved: false,
 };
 
 // In-memory backing store for tests / SSR / non-browser environments

@@ -67,15 +67,15 @@ A six-phase agile roadmap tailored for high execution velocity, testability, and
 ---
 
 ## Phase 5: Monetization & Store Services (Sprint 5)
-- [ ] Implement `services/ads/adsInterface.ts` with mock provider for local development.
-- [ ] Integrate Google Mobile Ads SDK (`react-native-google-mobile-ads`):
+- [x] Implement `services/ads/adsInterface.ts` with mock provider for local development.
+- [x] Integrate Google Mobile Ads SDK (`react-native-google-mobile-ads` / AdMob bridge):
   - Rewarded Ad loader & reward listener for Hints.
   - Interstitial Ad with 4-level pacing engine & cooldown timer.
-- [ ] Integrate Google Play Billing (`react-native-iap`):
+- [x] Integrate Google Play Billing (`react-native-iap` / Billing bridge):
   - "Remove Ads" product query, purchase flow, and signature verification.
   - "Restore Purchases" button in Settings.
-- [ ] Offline fallback: Ensure zero crashes or blocking screens when internet is disconnected.
-- [ ] **Definition of Done:** Verified ad playback on Android test devices; mock/sandbox IAP removes interstitials.
+- [x] Offline fallback: Ensure zero crashes or blocking screens when internet is disconnected.
+- [x] **Definition of Done:** Verified ad playback on Android test devices; mock/sandbox IAP removes interstitials.
 
 ---
 

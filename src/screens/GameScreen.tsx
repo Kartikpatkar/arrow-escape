@@ -24,12 +24,16 @@ import {
 } from '../services/storage/progressStorage';
 import { audioService } from '../services/audio/audioService';
 import { hapticsService } from '../services/haptics/hapticsService';
+import { admobService } from '../services/ads/admobService';
+import { billingService } from '../services/billing/billingService';
 import { Board } from '../components/game/Board';
 import { GameHeader } from '../components/game/GameHeader';
 import { GameControls } from '../components/game/GameControls';
 import { VictoryOverlay } from '../components/game/VictoryOverlay';
 import { LevelSelectModal } from '../components/game/LevelSelectModal';
 import { SettingsModal } from '../components/game/SettingsModal';
+import { RewardedAdPromptModal } from '../components/game/RewardedAdPromptModal';
+import { AdInterstitialModal } from '../components/game/AdInterstitialModal';
 
 export const GameScreen: React.FC = () => {
   const [currentLevelId, setCurrentLevelId] = useState(1);
@@ -39,6 +43,7 @@ export const GameScreen: React.FC = () => {
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>('dawn');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
+  const [adsRemoved, setAdsRemoved] = useState(false);
 
   // Animation & Feedback States
   const [escapingArrowIds, setEscapingArrowIds] = useState<string[]>([]);
@@ -47,6 +52,8 @@ export const GameScreen: React.FC = () => {
   const [hintArrowId, setHintArrowId] = useState<string | null>(null);
   const [isLevelSelectOpen, setIsLevelSelectOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isRewardedPromptOpen, setIsRewardedPromptOpen] = useState(false);
+  const [isInterstitialOpen, setIsInterstitialOpen] = useState(false);
 
   // Load Persisted Progress on Initial Mount
   useEffect(() => {
@@ -56,8 +63,10 @@ export const GameScreen: React.FC = () => {
       setSelectedThemeKey(saved.selectedTheme);
       setSoundEnabled(saved.soundEnabled);
       setHapticsEnabled(saved.hapticsEnabled);
+      setAdsRemoved(saved.adsRemoved);
       audioService.setEnabled(saved.soundEnabled);
       hapticsService.setEnabled(saved.hapticsEnabled);
+      admobService.setAdsRemoved(saved.adsRemoved);
 
       const starsMap: Record<number, number> = {};
       Object.entries(saved.levelRecords).forEach(([lvlId, rec]) => {
@@ -132,8 +141,9 @@ export const GameScreen: React.FC = () => {
             }));
             setUnlockedLevel(prev => Math.max(prev, currentLevelId + 1));
 
-            // Persist to local storage
+            // Persist to local storage & notify ad pacing
             recordLevelCompletion(currentLevelId, stars, nextState.totalTaps);
+            admobService.onLevelCompleted();
           }
         }, 260);
       } else {
@@ -176,7 +186,12 @@ export const GameScreen: React.FC = () => {
 
   // Handle Hint
   const handleHint = useCallback(() => {
-    if (hintsAvailable <= 0 || gameState.isCompleted) return;
+    if (gameState.isCompleted) return;
+
+    if (hintsAvailable <= 0) {
+      setIsRewardedPromptOpen(true);
+      return;
+    }
 
     const recommendation = getHint(gameState.activeArrows, gameState.level);
     if (recommendation.hasHint && recommendation.recommendedArrowId) {
@@ -185,6 +200,35 @@ export const GameScreen: React.FC = () => {
       updateHintsAvailable(-1).then(newCount => setHintsAvailable(newCount));
     }
   }, [hintsAvailable, gameState]);
+
+  // Watch Rewarded Ad for Free Hint
+  const handleWatchRewardedAd = useCallback(async () => {
+    const reward = await admobService.showRewardedAd();
+    if (reward) {
+      setHintsAvailable(prev => prev + reward.amount);
+      audioService.playHintChime();
+    }
+  }, []);
+
+  // Handle Remove Ads Purchase
+  const handlePurchaseRemoveAds = useCallback(async () => {
+    const res = await billingService.purchaseRemoveAds();
+    if (res.success) {
+      setAdsRemoved(true);
+      admobService.setAdsRemoved(true);
+      audioService.playVictoryFanfare();
+    }
+  }, []);
+
+  // Handle Restore Purchases
+  const handleRestorePurchases = useCallback(async () => {
+    const res = await billingService.restorePurchases();
+    if (res.restored) {
+      setAdsRemoved(true);
+      admobService.setAdsRemoved(true);
+      audioService.playClick();
+    }
+  }, []);
 
   // Cycle Theme
   const handleToggleTheme = useCallback(() => {
@@ -223,19 +267,38 @@ export const GameScreen: React.FC = () => {
     setUnlockedLevel(1);
     setLevelStars({});
     setHintsAvailable(5);
+    setAdsRemoved(false);
+    admobService.setAdsRemoved(false);
     loadLevel(1);
   }, [loadLevel]);
 
-  // Handle Next Level
-  const handleNextLevel = useCallback(() => {
-    audioService.playClick();
+  const proceedToNextLevel = useCallback(() => {
     const nextId = currentLevelId + 1;
     if (nextId <= CORE_LEVELS.length) {
       loadLevel(nextId);
     } else {
-      loadLevel(1); // loop back
+      loadLevel(1);
     }
   }, [currentLevelId, loadLevel]);
+
+  // Handle Next Level
+  const handleNextLevel = useCallback(() => {
+    audioService.playClick();
+
+    // Check if Interstitial ad is permitted by pacing engine
+    if (admobService.getPacingEngine().canShowInterstitial().allowed) {
+      admobService.getPacingEngine().recordInterstitialShown();
+      setIsInterstitialOpen(true);
+      return;
+    }
+
+    proceedToNextLevel();
+  }, [proceedToNextLevel]);
+
+  const handleDismissInterstitial = useCallback(() => {
+    setIsInterstitialOpen(false);
+    proceedToNextLevel();
+  }, [proceedToNextLevel]);
 
   return (
     <SafeAreaView style={[styles.rootContainer, { backgroundColor: theme.background }]}>
@@ -298,12 +361,29 @@ export const GameScreen: React.FC = () => {
         soundEnabled={soundEnabled}
         hapticsEnabled={hapticsEnabled}
         selectedThemeKey={selectedThemeKey}
+        adsRemoved={adsRemoved}
         theme={theme}
         onToggleSound={handleToggleSound}
         onToggleHaptics={handleToggleHaptics}
         onSelectTheme={handleSelectTheme}
+        onPurchaseRemoveAds={handlePurchaseRemoveAds}
+        onRestorePurchases={handleRestorePurchases}
         onResetProgress={handleResetProgress}
         onClose={() => setIsSettingsOpen(false)}
+      />
+
+      {/* Rewarded Ad Prompt Modal */}
+      <RewardedAdPromptModal
+        visible={isRewardedPromptOpen}
+        theme={theme}
+        onWatchAd={handleWatchRewardedAd}
+        onClose={() => setIsRewardedPromptOpen(false)}
+      />
+
+      {/* Interstitial Ad Modal */}
+      <AdInterstitialModal
+        visible={isInterstitialOpen}
+        onDismiss={handleDismissInterstitial}
       />
 
       {/* Victory Celebration Overlay */}

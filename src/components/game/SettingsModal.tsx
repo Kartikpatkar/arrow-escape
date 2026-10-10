@@ -12,10 +12,13 @@ interface SettingsModalProps {
   soundEnabled: boolean;
   hapticsEnabled: boolean;
   selectedThemeKey: string;
+  adsRemoved: boolean;
   theme: ColorTheme;
   onToggleSound: (enabled: boolean) => void;
   onToggleHaptics: (enabled: boolean) => void;
   onSelectTheme: (themeKey: string) => void;
+  onPurchaseRemoveAds: () => void;
+  onRestorePurchases: () => void;
   onResetProgress: () => void;
   onClose: () => void;
 }
@@ -25,10 +28,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   soundEnabled,
   hapticsEnabled,
   selectedThemeKey,
+  adsRemoved,
   theme,
   onToggleSound,
   onToggleHaptics,
   onSelectTheme,
+  onPurchaseRemoveAds,
+  onRestorePurchases,
   onResetProgress,
   onClose,
 }) => {
@@ -114,6 +120,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               );
             })}
           </View>
+        </View>
+
+        {/* Monetization / In-App Purchases */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>STORE</Text>
+          {adsRemoved ? (
+            <View style={[styles.adFreeBadge, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+              <Text style={styles.adFreeText}>✨ Ad-Free Supporter Active</Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              onPress={onPurchaseRemoveAds}
+              style={[styles.removeAdsBtn, { backgroundColor: theme.arrowBody }]}
+            >
+              <Text style={styles.removeAdsBtnText}>💎 Remove Ads ($1.99)</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity onPress={onRestorePurchases} style={styles.restoreBtn}>
+            <Text style={[styles.restoreBtnText, { color: theme.textSecondary }]}>Restore Purchases</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Danger Zone: Reset */}
@@ -253,6 +280,40 @@ const styles = StyleSheet.create({
   },
   themeName: {
     fontSize: 12,
+  },
+  removeAdsBtn: {
+    width: '100%',
+    height: 48,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  removeAdsBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  adFreeBadge: {
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  adFreeText: {
+    color: '#059669',
+    fontWeight: '800',
+    fontSize: 13,
+  },
+  restoreBtn: {
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  restoreBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   resetButton: {
     borderWidth: 1.5,
