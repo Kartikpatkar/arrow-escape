@@ -5,7 +5,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import { ArrowConfig, Direction } from '../../engine/types';
 import { ColorTheme } from '../../theme/colors';
 
@@ -272,6 +272,28 @@ export const ArrowTile: React.FC<ArrowTileProps> = ({
             <circle cx="50" cy="18" r="3.5" fill="#FFFFFF" opacity="0.9" />
           </svg>
         </View>
+
+        {/* Special Arrow Mechanics Badges */}
+        {arrow.isLocked && (
+          <View style={styles.badgeLocked}>
+            <Text style={styles.badgeText}>🔒</Text>
+          </View>
+        )}
+        {arrow.type === 'KEY' && (
+          <View style={styles.badgeKey}>
+            <Text style={styles.badgeText}>🔑</Text>
+          </View>
+        )}
+        {arrow.type === 'BOMB' && (
+          <View style={styles.badgeBomb}>
+            <Text style={styles.badgeText}>💣</Text>
+          </View>
+        )}
+        {arrow.type === 'ROTATING' && (
+          <View style={styles.badgeRotating}>
+            <Text style={styles.badgeText}>↻</Text>
+          </View>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -337,5 +359,69 @@ const styles = StyleSheet.create({
   escapingPad: {
     backgroundColor: '#FEF08A',
     borderColor: '#FBBF24',
+  },
+  badgeLocked: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: 'rgba(234, 179, 8, 0.95)',
+    borderRadius: 8,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    borderWidth: 1,
+    borderColor: '#FEF08A',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  badgeKey: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: 'rgba(59, 130, 246, 0.95)',
+    borderRadius: 8,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    borderWidth: 1,
+    borderColor: '#93C5FD',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  badgeBomb: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: 'rgba(239, 68, 68, 0.95)',
+    borderRadius: 8,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+  },
+  badgeRotating: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: 'rgba(168, 85, 247, 0.95)',
+    borderRadius: 8,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    borderWidth: 1,
+    borderColor: '#E9D5FF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: '800',
   },
 });

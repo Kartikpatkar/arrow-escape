@@ -1,12 +1,12 @@
 /**
  * Arrow Escape — Home Screen
- * Central hub for Play/Continue, Level Select, Google Play Achievements, Settings,
- * Save Progress & Cloud Sync, and bottom Banner Ad.
+ * Redesigned Modern Bento Grid Layout for streamlined mobile UX.
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -21,7 +21,6 @@ import {
 } from '../services/storage/progressStorage';
 import { audioService } from '../services/audio/audioService';
 import { hapticsService } from '../services/haptics/hapticsService';
-import { playGamesService } from '../services/playgames/playGamesService';
 import { billingService } from '../services/billing/billingService';
 import { admobService } from '../services/ads/admobService';
 import { LevelSelectModal } from '../components/game/LevelSelectModal';
@@ -42,7 +41,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [adsRemoved, setAdsRemoved] = useState(false);
-  const [syncStatusText, setSyncStatusText] = useState('All Progress Saved (Cloud & Local)');
+  const [syncStatusText, setSyncStatusText] = useState('All Synced ✓');
 
   // Modals
   const [isLevelSelectOpen, setIsLevelSelectOpen] = useState(false);
@@ -82,10 +81,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
     audioService.playClick();
     hapticsService.vibrateLight();
     saveUserProgress({});
-    setSyncStatusText(`Saved at ${new Date().toLocaleTimeString()} ✓`);
+    setSyncStatusText(`Saved ${new Date().toLocaleTimeString()} ✓`);
     setTimeout(() => {
-      setSyncStatusText('All Progress Saved (Cloud & Local)');
-    }, 3000);
+      setSyncStatusText('All Synced ✓');
+    }, 2500);
   }, []);
 
   // Settings Handlers
@@ -135,7 +134,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
 
   return (
     <SafeAreaView style={[styles.rootContainer, { backgroundColor: theme.background }]}>
-      <View style={styles.mainContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Top Branding / Logo */}
         <View style={styles.brandingContainer}>
           <View style={styles.logoBadge}>
@@ -163,7 +162,32 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
           </View>
         </View>
 
-        {/* Daily Puzzle Challenge Card */}
+        {/* Hero Primary Action (Full-Width Card) */}
+        <TouchableOpacity
+          style={styles.heroPlayCard}
+          onPress={() => {
+            audioService.playClick();
+            onStartGame(unlockedLevel);
+          }}
+          activeOpacity={0.88}
+        >
+          <View style={styles.heroPlayIconWrapper}>
+            <Text style={styles.heroPlayIcon}>▶</Text>
+          </View>
+          <View style={styles.heroTextCol}>
+            <Text style={styles.heroPlayTitle}>
+              {unlockedLevel > 1 ? `CONTINUE LEVEL ${unlockedLevel}` : 'START GAME'}
+            </Text>
+            <Text style={styles.heroPlaySubtitle}>
+              {unlockedLevel > 1
+                ? `${TOTAL_LEVELS - unlockedLevel + 1} puzzles remaining • Tap to play`
+                : 'Tap to begin spatial puzzle journey'}
+            </Text>
+          </View>
+          <Text style={styles.heroArrowGlyph}>→</Text>
+        </TouchableOpacity>
+
+        {/* Daily Challenge Card */}
         <DailyChallengeCard
           onPlayDaily={() => {
             audioService.playClick();
@@ -171,100 +195,70 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
           }}
         />
 
-        {/* Main Action Menu */}
-        <View style={styles.menuContainer}>
-          {/* Continue / Play Primary CTA */}
+        {/* 2x2 Bento Tiles Grid */}
+        <View style={styles.bentoGrid}>
+          {/* Tile 1: Level Select */}
           <TouchableOpacity
-            style={styles.primaryPlayButton}
-            onPress={() => {
-              audioService.playClick();
-              onStartGame(unlockedLevel);
-            }}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.playIconText}>▶</Text>
-            <View>
-              <Text style={styles.primaryPlayTitle}>
-                {unlockedLevel > 1 ? `CONTINUE LEVEL ${unlockedLevel}` : 'START GAME'}
-              </Text>
-              <Text style={styles.primaryPlaySubtitle}>
-                {unlockedLevel > 1
-                  ? `${TOTAL_LEVELS - unlockedLevel + 1} puzzles remaining`
-                  : 'Tap to begin puzzle journey'}
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Select Level Secondary CTA */}
-          <TouchableOpacity
-            style={styles.menuButton}
+            style={styles.bentoTile}
             onPress={() => {
               audioService.playClick();
               setIsLevelSelectOpen(true);
             }}
             activeOpacity={0.8}
           >
-            <Text style={styles.menuButtonIcon}>🗺️</Text>
-            <View style={styles.menuButtonTextCol}>
-              <Text style={styles.menuButtonTitle}>Select Level</Text>
-              <Text style={styles.menuButtonSubtitle}>Browse 1 to {TOTAL_LEVELS} Puzzles</Text>
+            <View style={[styles.tileIconCircle, { backgroundColor: 'rgba(59, 130, 246, 0.2)' }]}>
+              <Text style={styles.tileIcon}>🗺️</Text>
             </View>
-            <Text style={styles.menuChevron}>›</Text>
+            <Text style={styles.tileTitle}>Select Level</Text>
+            <Text style={styles.tileSubtitle}>500 Puzzles • 10 Chapters</Text>
           </TouchableOpacity>
 
-          {/* Google Play Achievements */}
+          {/* Tile 2: Play Games Achievements */}
           <TouchableOpacity
-            style={styles.menuButton}
+            style={styles.bentoTile}
             onPress={() => {
               audioService.playClick();
               setIsAchievementsOpen(true);
             }}
             activeOpacity={0.8}
           >
-            <Text style={styles.menuButtonIcon}>🎮</Text>
-            <View style={styles.menuButtonTextCol}>
-              <Text style={styles.menuButtonTitle}>Play Achievements</Text>
-              <Text style={styles.menuButtonSubtitle}>Google Play XP & Rewards</Text>
+            <View style={[styles.tileIconCircle, { backgroundColor: 'rgba(234, 179, 8, 0.2)' }]}>
+              <Text style={styles.tileIcon}>🎮</Text>
             </View>
-            <Text style={styles.menuChevron}>›</Text>
+            <Text style={styles.tileTitle}>Achievements</Text>
+            <Text style={styles.tileSubtitle}>Google Play XP Badges</Text>
           </TouchableOpacity>
 
-          {/* Settings */}
+          {/* Tile 3: Settings */}
           <TouchableOpacity
-            style={styles.menuButton}
+            style={styles.bentoTile}
             onPress={() => {
               audioService.playClick();
               setIsSettingsOpen(true);
             }}
             activeOpacity={0.8}
           >
-            <Text style={styles.menuButtonIcon}>⚙️</Text>
-            <View style={styles.menuButtonTextCol}>
-              <Text style={styles.menuButtonTitle}>Settings</Text>
-              <Text style={styles.menuButtonSubtitle}>Audio, Themes & Haptics</Text>
+            <View style={[styles.tileIconCircle, { backgroundColor: 'rgba(168, 85, 247, 0.2)' }]}>
+              <Text style={styles.tileIcon}>⚙️</Text>
             </View>
-            <Text style={styles.menuChevron}>›</Text>
+            <Text style={styles.tileTitle}>Settings</Text>
+            <Text style={styles.tileSubtitle}>Audio, Themes & Store</Text>
           </TouchableOpacity>
-        </View>
 
-        {/* Save Process & Cloud Sync Section */}
-        <View style={styles.cloudSaveCard}>
-          <View style={styles.cloudSaveInfo}>
-            <Text style={styles.cloudIcon}>☁️</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.cloudTitle}>Save Progress</Text>
-              <Text style={styles.cloudStatus}>{syncStatusText}</Text>
-            </View>
-          </View>
+          {/* Tile 4: Save & Cloud Sync */}
           <TouchableOpacity
-            style={styles.syncButton}
+            style={styles.bentoTile}
             onPress={handleManualSave}
-            activeOpacity={0.7}
+            activeOpacity={0.8}
           >
-            <Text style={styles.syncButtonText}>Sync Now</Text>
+            <View style={[styles.tileIconCircle, { backgroundColor: 'rgba(16, 185, 129, 0.2)' }]}>
+              <Text style={styles.tileIcon}>☁️</Text>
+            </View>
+            <Text style={styles.tileTitle}>Save Progress</Text>
+            <Text style={[styles.tileSubtitle, { color: '#34D399' }]}>{syncStatusText}</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
 
       {/* Bottom Banner Ad */}
       <BannerAd
@@ -320,47 +314,46 @@ const styles = StyleSheet.create({
     backgroundImage:
       'radial-gradient(ellipse 90% 70% at 50% 25%, #183D5D 0%, #0C1E30 60%, #06101B 100%)' as any,
   },
-  mainContent: {
-    flex: 1,
+  scrollContent: {
     width: '100%',
-    maxWidth: 460,
+    maxWidth: 480,
     alignSelf: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
-    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 24,
   },
   brandingContainer: {
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 4,
+    marginBottom: 8,
   },
   logoBadge: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
+    width: 62,
+    height: 62,
+    borderRadius: 31,
     backgroundColor: 'rgba(99, 102, 241, 0.25)',
     borderWidth: 2,
     borderColor: '#818CF8',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
     shadowColor: '#818CF8',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
   },
   logoIcon: {
-    fontSize: 34,
+    fontSize: 30,
   },
   gameTitle: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '900',
     color: '#F8FAFC',
     letterSpacing: 2,
     textAlign: 'center',
   },
   gameSubtitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: '#94A3B8',
     marginTop: 2,
@@ -372,9 +365,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 16,
-    marginVertical: 12,
+    marginVertical: 8,
     justifyContent: 'space-between',
   },
   hudStat: {
@@ -382,12 +375,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   hudValue: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '800',
     color: '#F8FAFC',
   },
   hudLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
     color: '#64748B',
     marginTop: 2,
@@ -399,17 +392,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     alignSelf: 'center',
   },
-  menuContainer: {
-    width: '100%',
-    gap: 10,
-  },
-  primaryPlayButton: {
+  heroPlayCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#059669',
     borderRadius: 18,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
     borderWidth: 1.5,
     borderColor: '#34D399',
     shadowColor: '#10B981',
@@ -417,99 +406,80 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 12,
     elevation: 8,
+    marginVertical: 4,
   },
-  playIconText: {
-    fontSize: 26,
+  heroPlayIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  heroPlayIcon: {
+    fontSize: 20,
     color: '#FFFFFF',
-    marginRight: 14,
+    marginLeft: 2,
   },
-  primaryPlayTitle: {
-    fontSize: 17,
+  heroTextCol: {
+    flex: 1,
+  },
+  heroPlayTitle: {
+    fontSize: 16,
     fontWeight: '900',
     color: '#FFFFFF',
     letterSpacing: 0.8,
   },
-  primaryPlaySubtitle: {
+  heroPlaySubtitle: {
     fontSize: 11,
     color: '#A7F3D0',
     marginTop: 2,
     fontWeight: '600',
   },
-  menuButton: {
+  heroArrowGlyph: {
+    fontSize: 20,
+    color: '#A7F3D0',
+    fontWeight: '900',
+    marginLeft: 8,
+  },
+  bentoGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(30, 41, 59, 0.7)',
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 4,
+    justifyContent: 'space-between',
+  },
+  bentoTile: {
+    width: '48.5%',
+    backgroundColor: 'rgba(30, 41, 59, 0.65)',
+    borderRadius: 16,
+    padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.07)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    minHeight: 100,
+    justifyContent: 'space-between',
   },
-  menuButtonIcon: {
-    fontSize: 22,
-    marginRight: 14,
+  tileIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
   },
-  menuButtonTextCol: {
-    flex: 1,
+  tileIcon: {
+    fontSize: 18,
   },
-  menuButtonTitle: {
-    fontSize: 14,
+  tileTitle: {
+    fontSize: 13,
     fontWeight: '800',
     color: '#F8FAFC',
   },
-  menuButtonSubtitle: {
-    fontSize: 11,
-    color: '#94A3B8',
-    marginTop: 1,
-  },
-  menuChevron: {
-    fontSize: 20,
-    color: '#64748B',
-    fontWeight: 'bold',
-  },
-  cloudSaveCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    padding: 12,
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  cloudSaveInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  cloudIcon: {
-    fontSize: 20,
-    marginRight: 10,
-  },
-  cloudTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#E2E8F0',
-  },
-  cloudStatus: {
+  tileSubtitle: {
     fontSize: 10,
-    color: '#10B981',
-    marginTop: 1,
+    color: '#94A3B8',
+    marginTop: 2,
     fontWeight: '500',
-  },
-  syncButton: {
-    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(129, 140, 248, 0.4)',
-  },
-  syncButtonText: {
-    color: '#C7D2FE',
-    fontSize: 11,
-    fontWeight: '700',
   },
 });

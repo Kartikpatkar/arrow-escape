@@ -5,6 +5,8 @@
 
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 
+export type ArrowType = 'NORMAL' | 'LOCKED' | 'KEY' | 'BOMB' | 'ROTATING';
+
 export interface Vector2D {
   readonly dx: number;
   readonly dy: number;
@@ -20,6 +22,12 @@ export interface ArrowConfig {
   readonly x: number;
   readonly y: number;
   readonly direction: Direction;
+  readonly type?: ArrowType;
+  readonly lockRequirement?: number; // Count of escaped arrows required to unlock
+  readonly keyTargetId?: string; // Target locked arrow ID to unlock upon escape
+  readonly isLocked?: boolean; // Current locked state
+  readonly bombRadius?: number; // Blast radius for BOMB arrow (default 1)
+  readonly rotationSteps?: number; // Times rotated
   readonly colorVariant?: string;
 }
 

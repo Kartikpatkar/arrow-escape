@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { StyleSheet, View, SafeAreaView } from 'react-native';
+import { StyleSheet, View, Text, SafeAreaView } from 'react-native';
 import {
   GameEngineState,
   initializeGameState,
@@ -205,19 +205,25 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           }
         }
       } else {
-        // Blocked tap: Damped jiggle & blocker highlight flash
-        audioService.playBlockedThud();
-        hapticsService.vibrateWarning();
+        const wasRotated = targetArrow.type === 'ROTATING';
+        if (wasRotated) {
+          audioService.playClick();
+          hapticsService.vibrateLight();
+        } else {
+          // Blocked tap: Damped jiggle & blocker highlight flash
+          audioService.playBlockedThud();
+          hapticsService.vibrateWarning();
 
-        setBlockedArrowId(arrowId);
-        if (moveResult.diagnostic.blockerId) {
-          setBlockerFlashId(moveResult.diagnostic.blockerId);
+          setBlockedArrowId(arrowId);
+          if (moveResult.diagnostic.blockerId) {
+            setBlockerFlashId(moveResult.diagnostic.blockerId);
+          }
+
+          setTimeout(() => {
+            setBlockedArrowId(null);
+            setBlockerFlashId(null);
+          }, 360);
         }
-
-        setTimeout(() => {
-          setBlockedArrowId(null);
-          setBlockerFlashId(null);
-        }, 360);
 
         engineStateRef.current = nextState;
         setGameState(nextState);
@@ -378,6 +384,23 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     return Object.values(levelStars).reduce((sum, s) => sum + s, 0);
   }, [levelStars]);
 
+  const mechanicTip = useMemo(() => {
+    const arrows = gameState.level.arrows;
+    if (gameState.level.id === 31 || arrows.some(a => a.type === 'LOCKED')) {
+      return '🔒 Locked Arrow: Clear other arrows first to unlock!';
+    }
+    if (gameState.level.id === 61 || arrows.some(a => a.type === 'KEY')) {
+      return '🔑 Key Arrow: Escape the key to unlock the chained arrow!';
+    }
+    if (gameState.level.id === 101 || arrows.some(a => a.type === 'ROTATING')) {
+      return '↻ Rotating Arrow: Tap while blocked to rotate direction!';
+    }
+    if (gameState.level.id === 161 || arrows.some(a => a.type === 'BOMB')) {
+      return '💣 Bomb Arrow: Escapes and clears neighboring arrows!';
+    }
+    return null;
+  }, [gameState.level]);
+
   return (
     <SafeAreaView style={[styles.rootContainer, { backgroundColor: theme.background }]}>
       <View style={styles.contentWrapper}>
@@ -393,6 +416,13 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           onToggleTheme={handleToggleTheme}
           onOpenSettings={() => setIsSettingsOpen(true)}
         />
+
+        {/* Mechanic Tip Banner */}
+        {mechanicTip && (
+          <View style={[styles.tipBanner, { backgroundColor: theme.surface, borderColor: theme.boardBorder }]}>
+            <Text style={[styles.tipText, { color: theme.textSecondary }]}>{mechanicTip}</Text>
+          </View>
+        )}
 
         {/* Board Center Stage */}
         <View style={styles.boardContainer}>
@@ -525,5 +555,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     paddingVertical: 12,
+  },
+  tipBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginVertical: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
 });
