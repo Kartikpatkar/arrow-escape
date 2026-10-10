@@ -58,11 +58,11 @@ A six-phase agile roadmap tailored for high execution velocity, testability, and
 ---
 
 ## Phase 4: Sensory Polish, Theme Engine & Settings (Sprint 4)
-- [ ] Integrate `react-native-haptic-feedback` (light tap for escape, double buzz for blocked).
-- [ ] Integrate sound engine with crisp, low-latency audio assets (escape pops, blocked thud, fanfare).
-- [ ] Build `screens/SettingsScreen.tsx` (Sound toggle, Haptics toggle, Credits, Reset Data).
-- [ ] Implement Theme tokens (Default "Dawn Softness" + "Midnight Dark").
-- [ ] **Definition of Done:** Game feels tactile, punchy, responsive, and aesthetically premium.
+- [x] Integrate `react-native-haptic-feedback` (light tap for escape, double buzz for blocked).
+- [x] Integrate sound engine with crisp, low-latency audio assets (escape pops, blocked thud, fanfare).
+- [x] Build `screens/SettingsScreen.tsx` / `SettingsModal.tsx` (Sound toggle, Haptics toggle, Credits, Reset Data).
+- [x] Implement Theme tokens (Default "Dawn Softness" + "Midnight Dark" + "Cyber Neon").
+- [x] **Definition of Done:** Game feels tactile, punchy, responsive, and aesthetically premium.
 
 ---
 

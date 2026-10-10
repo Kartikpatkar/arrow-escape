@@ -20,12 +20,16 @@ import {
   recordLevelCompletion,
   updateHintsAvailable,
   saveUserProgress,
+  resetAllProgress,
 } from '../services/storage/progressStorage';
+import { audioService } from '../services/audio/audioService';
+import { hapticsService } from '../services/haptics/hapticsService';
 import { Board } from '../components/game/Board';
 import { GameHeader } from '../components/game/GameHeader';
 import { GameControls } from '../components/game/GameControls';
 import { VictoryOverlay } from '../components/game/VictoryOverlay';
 import { LevelSelectModal } from '../components/game/LevelSelectModal';
+import { SettingsModal } from '../components/game/SettingsModal';
 
 export const GameScreen: React.FC = () => {
   const [currentLevelId, setCurrentLevelId] = useState(1);
@@ -33,6 +37,8 @@ export const GameScreen: React.FC = () => {
   const [levelStars, setLevelStars] = useState<Record<number, number>>({});
   const [hintsAvailable, setHintsAvailable] = useState(5);
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>('dawn');
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [hapticsEnabled, setHapticsEnabled] = useState(true);
 
   // Animation & Feedback States
   const [escapingArrowIds, setEscapingArrowIds] = useState<string[]>([]);
@@ -40,6 +46,7 @@ export const GameScreen: React.FC = () => {
   const [blockerFlashId, setBlockerFlashId] = useState<string | null>(null);
   const [hintArrowId, setHintArrowId] = useState<string | null>(null);
   const [isLevelSelectOpen, setIsLevelSelectOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Load Persisted Progress on Initial Mount
   useEffect(() => {
@@ -47,6 +54,10 @@ export const GameScreen: React.FC = () => {
       setUnlockedLevel(saved.unlockedLevel);
       setHintsAvailable(saved.hintsAvailable);
       setSelectedThemeKey(saved.selectedTheme);
+      setSoundEnabled(saved.soundEnabled);
+      setHapticsEnabled(saved.hapticsEnabled);
+      audioService.setEnabled(saved.soundEnabled);
+      hapticsService.setEnabled(saved.hapticsEnabled);
 
       const starsMap: Record<number, number> = {};
       Object.entries(saved.levelRecords).forEach(([lvlId, rec]) => {
@@ -97,6 +108,10 @@ export const GameScreen: React.FC = () => {
           setHintArrowId(null);
         }
 
+        // Trigger sensory feedback
+        audioService.playEscapePop(gameState.escapedArrowIds.length);
+        hapticsService.vibrateLight();
+
         // Trigger smooth physical escape flyout
         setEscapingArrowIds(prev => [...prev, arrowId]);
 
@@ -107,6 +122,9 @@ export const GameScreen: React.FC = () => {
 
           // If level completed, update progression & stars
           if (nextState.isCompleted) {
+            audioService.playVictoryFanfare();
+            hapticsService.vibrateSuccess();
+
             const stars = nextState.starsAwarded;
             setLevelStars(prev => ({
               ...prev,
@@ -119,7 +137,10 @@ export const GameScreen: React.FC = () => {
           }
         }, 260);
       } else {
-        // Blocked tap: Trigger horizontal damped jiggle & blocker highlight flash
+        // Blocked tap: Trigger sensory feedback, horizontal damped jiggle & blocker highlight flash
+        audioService.playBlockedThud();
+        hapticsService.vibrateWarning();
+
         setBlockedArrowId(arrowId);
         if (moveResult.diagnostic.blockerId) {
           setBlockerFlashId(moveResult.diagnostic.blockerId);
@@ -138,12 +159,14 @@ export const GameScreen: React.FC = () => {
 
   // Handle Undo
   const handleUndo = useCallback(() => {
+    audioService.playClick();
     setGameState(prev => undoLastMove(prev));
     setHintArrowId(null);
   }, []);
 
   // Handle Restart
   const handleRestart = useCallback(() => {
+    audioService.playClick();
     setGameState(resetGameState(gameState));
     setEscapingArrowIds([]);
     setBlockedArrowId(null);
@@ -157,6 +180,7 @@ export const GameScreen: React.FC = () => {
 
     const recommendation = getHint(gameState.activeArrows, gameState.level);
     if (recommendation.hasHint && recommendation.recommendedArrowId) {
+      audioService.playHintChime();
       setHintArrowId(recommendation.recommendedArrowId);
       updateHintsAvailable(-1).then(newCount => setHintsAvailable(newCount));
     }
@@ -164,6 +188,7 @@ export const GameScreen: React.FC = () => {
 
   // Cycle Theme
   const handleToggleTheme = useCallback(() => {
+    audioService.playClick();
     const keys = Object.keys(THEMES);
     const nextIdx = (keys.indexOf(selectedThemeKey) + 1) % keys.length;
     const nextThemeKey = keys[nextIdx];
@@ -171,8 +196,39 @@ export const GameScreen: React.FC = () => {
     saveUserProgress({ selectedTheme: nextThemeKey });
   }, [selectedThemeKey]);
 
+  // Handle Sound Toggle
+  const handleToggleSound = useCallback((enabled: boolean) => {
+    setSoundEnabled(enabled);
+    audioService.setEnabled(enabled);
+    saveUserProgress({ soundEnabled: enabled });
+  }, []);
+
+  // Handle Haptics Toggle
+  const handleToggleHaptics = useCallback((enabled: boolean) => {
+    setHapticsEnabled(enabled);
+    hapticsService.setEnabled(enabled);
+    saveUserProgress({ hapticsEnabled: enabled });
+  }, []);
+
+  // Handle Theme Selection from Settings
+  const handleSelectTheme = useCallback((themeKey: string) => {
+    audioService.playClick();
+    setSelectedThemeKey(themeKey);
+    saveUserProgress({ selectedTheme: themeKey });
+  }, []);
+
+  // Handle Reset Progress
+  const handleResetProgress = useCallback(async () => {
+    await resetAllProgress();
+    setUnlockedLevel(1);
+    setLevelStars({});
+    setHintsAvailable(5);
+    loadLevel(1);
+  }, [loadLevel]);
+
   // Handle Next Level
   const handleNextLevel = useCallback(() => {
+    audioService.playClick();
     const nextId = currentLevelId + 1;
     if (nextId <= CORE_LEVELS.length) {
       loadLevel(nextId);
@@ -193,6 +249,7 @@ export const GameScreen: React.FC = () => {
           theme={theme}
           onOpenLevelSelect={() => setIsLevelSelectOpen(true)}
           onToggleTheme={handleToggleTheme}
+          onOpenSettings={() => setIsSettingsOpen(true)}
         />
 
         {/* Board Center Stage */}
@@ -233,6 +290,20 @@ export const GameScreen: React.FC = () => {
         theme={theme}
         onSelectLevel={loadLevel}
         onClose={() => setIsLevelSelectOpen(false)}
+      />
+
+      {/* Settings Modal */}
+      <SettingsModal
+        visible={isSettingsOpen}
+        soundEnabled={soundEnabled}
+        hapticsEnabled={hapticsEnabled}
+        selectedThemeKey={selectedThemeKey}
+        theme={theme}
+        onToggleSound={handleToggleSound}
+        onToggleHaptics={handleToggleHaptics}
+        onSelectTheme={handleSelectTheme}
+        onResetProgress={handleResetProgress}
+        onClose={() => setIsSettingsOpen(false)}
       />
 
       {/* Victory Celebration Overlay */}

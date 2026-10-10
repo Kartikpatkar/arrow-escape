@@ -15,6 +15,7 @@ interface GameHeaderProps {
   theme: ColorTheme;
   onOpenLevelSelect?: () => void;
   onToggleTheme?: () => void;
+  onOpenSettings?: () => void;
 }
 
 export const GameHeader: React.FC<GameHeaderProps> = ({
@@ -25,6 +26,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
   theme,
   onOpenLevelSelect,
   onToggleTheme,
+  onOpenSettings,
 }) => {
   // Current star preview based on taps
   const invalidTaps = Math.max(0, totalTaps - totalArrows);
@@ -47,12 +49,20 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
           <Text style={[styles.levelTitle, { color: theme.textPrimary }]}>{levelTitle}</Text>
         </View>
 
-        <TouchableOpacity
-          onPress={onToggleTheme}
-          style={[styles.iconButton, { backgroundColor: theme.surface, borderColor: theme.boardBorder }]}
-        >
-          <Text style={[styles.iconText, { color: theme.textPrimary }]}>🎨</Text>
-        </TouchableOpacity>
+        <View style={styles.rightButtonsRow}>
+          <TouchableOpacity
+            onPress={onToggleTheme}
+            style={[styles.iconButton, { backgroundColor: theme.surface, borderColor: theme.boardBorder }]}
+          >
+            <Text style={[styles.iconText, { color: theme.textPrimary }]}>🎨</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={onOpenSettings}
+            style={[styles.iconButton, { backgroundColor: theme.surface, borderColor: theme.boardBorder }]}
+          >
+            <Text style={[styles.iconText, { color: theme.textPrimary }]}>⚙️</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Metrics Row (Stars & Moves) */}
@@ -99,6 +109,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 14,
+  },
+  rightButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   iconButton: {
     width: 44,
