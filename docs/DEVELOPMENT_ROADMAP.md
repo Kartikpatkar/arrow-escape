@@ -34,15 +34,15 @@ A six-phase agile roadmap tailored for high execution velocity, testability, and
 ---
 
 ## Phase 2: Playable Interface & Motion Engine (Sprint 2)
-- [ ] Setup React Native mobile project skeleton.
-- [ ] Build `Board.tsx` grid layout supporting dynamic $W \times H$ aspect ratios.
-- [ ] Build `ArrowTile.tsx` with rounded geometry and directional glyphs.
-- [ ] Integrate `react-native-reanimated` worklets for:
+- [x] Setup React Native mobile project skeleton.
+- [x] Build `Board.tsx` grid layout supporting dynamic $W \times H$ aspect ratios.
+- [x] Build `ArrowTile.tsx` with rounded geometry and directional glyphs.
+- [x] Integrate `react-native-reanimated` worklets for:
   - Arrow escape acceleration off-screen (250ms spring/timing).
   - Blocked tap horizontal shake animation ($\pm 6\text{px}$ jiggle).
   - Hint glow pulse effect.
-- [ ] Implement Game Header with live Move Counter, Level Title, and Restart button.
-- [ ] **Definition of Done:** Smooth 60fps tactile gameplay loop running on an Android device or simulator.
+- [x] Implement Game Header with live Move Counter, Level Title, and Restart button.
+- [x] **Definition of Done:** Smooth 60fps tactile gameplay loop running on an Android device or simulator.
 
 ---
 
