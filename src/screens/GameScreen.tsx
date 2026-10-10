@@ -3,8 +3,8 @@
  * Orchestrates gameplay, animations, engine state transitions, and UI modals.
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { StyleSheet, View, SafeAreaView, Dimensions } from 'react-native';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { StyleSheet, View, SafeAreaView } from 'react-native';
 import {
   GameEngineState,
   initializeGameState,
@@ -15,6 +15,12 @@ import {
 } from '../engine';
 import { CORE_LEVELS, getLevelById } from '../data/levels';
 import { THEMES, defaultTheme, ColorTheme } from '../theme/colors';
+import {
+  loadUserProgress,
+  recordLevelCompletion,
+  updateHintsAvailable,
+  saveUserProgress,
+} from '../services/storage/progressStorage';
 import { Board } from '../components/game/Board';
 import { GameHeader } from '../components/game/GameHeader';
 import { GameControls } from '../components/game/GameControls';
@@ -34,6 +40,21 @@ export const GameScreen: React.FC = () => {
   const [blockerFlashId, setBlockerFlashId] = useState<string | null>(null);
   const [hintArrowId, setHintArrowId] = useState<string | null>(null);
   const [isLevelSelectOpen, setIsLevelSelectOpen] = useState(false);
+
+  // Load Persisted Progress on Initial Mount
+  useEffect(() => {
+    loadUserProgress().then(saved => {
+      setUnlockedLevel(saved.unlockedLevel);
+      setHintsAvailable(saved.hintsAvailable);
+      setSelectedThemeKey(saved.selectedTheme);
+
+      const starsMap: Record<number, number> = {};
+      Object.entries(saved.levelRecords).forEach(([lvlId, rec]) => {
+        starsMap[Number(lvlId)] = rec.stars;
+      });
+      setLevelStars(starsMap);
+    });
+  }, []);
 
   const theme: ColorTheme = THEMES[selectedThemeKey] || defaultTheme;
 
@@ -92,6 +113,9 @@ export const GameScreen: React.FC = () => {
               [currentLevelId]: Math.max(prev[currentLevelId] || 0, stars),
             }));
             setUnlockedLevel(prev => Math.max(prev, currentLevelId + 1));
+
+            // Persist to local storage
+            recordLevelCompletion(currentLevelId, stars, nextState.totalTaps);
           }
         }, 260);
       } else {
@@ -134,7 +158,7 @@ export const GameScreen: React.FC = () => {
     const recommendation = getHint(gameState.activeArrows, gameState.level);
     if (recommendation.hasHint && recommendation.recommendedArrowId) {
       setHintArrowId(recommendation.recommendedArrowId);
-      setHintsAvailable(prev => Math.max(0, prev - 1));
+      updateHintsAvailable(-1).then(newCount => setHintsAvailable(newCount));
     }
   }, [hintsAvailable, gameState]);
 
@@ -142,7 +166,9 @@ export const GameScreen: React.FC = () => {
   const handleToggleTheme = useCallback(() => {
     const keys = Object.keys(THEMES);
     const nextIdx = (keys.indexOf(selectedThemeKey) + 1) % keys.length;
-    setSelectedThemeKey(keys[nextIdx]);
+    const nextThemeKey = keys[nextIdx];
+    setSelectedThemeKey(nextThemeKey);
+    saveUserProgress({ selectedTheme: nextThemeKey });
   }, [selectedThemeKey]);
 
   // Handle Next Level

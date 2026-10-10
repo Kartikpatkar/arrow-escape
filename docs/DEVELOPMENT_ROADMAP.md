@@ -47,13 +47,13 @@ A six-phase agile roadmap tailored for high execution velocity, testability, and
 ---
 
 ## Phase 3: Progression, 30 Curated Levels & Local Persistence (Sprint 3)
-- [ ] Author and validate curated initial 30-level pack across 5 difficulty tiers.
-- [ ] Build `services/storage/progressStorage.ts` with AsyncStorage.
-- [ ] Build `screens/LevelSelectScreen.tsx` (scrollable grid of levels, star badges, lock/unlock states).
-- [ ] Implement Move Undo history stack.
-- [ ] Implement Hint system (deducting from hint bank, visual arrow highlight).
-- [ ] Implement Level Completion Victory Modal with star awards (1, 2, or 3 stars) and "Next Level" CTA.
-- [ ] **Definition of Done:** Player can progress from Level 1 to 30; closing and killing the app retains all progress and stars.
+- [x] Author and validate curated initial 30-level pack across 5 difficulty tiers.
+- [x] Build `services/storage/progressStorage.ts` with AsyncStorage / localStorage.
+- [x] Build `screens/LevelSelectScreen.tsx` (scrollable grid of levels, star badges, lock/unlock states).
+- [x] Implement Move Undo history stack.
+- [x] Implement Hint system (deducting from hint bank, visual arrow highlight).
+- [x] Implement Level Completion Victory Modal with star awards (1, 2, or 3 stars) and "Next Level" CTA.
+- [x] **Definition of Done:** Player can progress from Level 1 to 30; closing and killing the app retains all progress and stars.
 
 ---
 
