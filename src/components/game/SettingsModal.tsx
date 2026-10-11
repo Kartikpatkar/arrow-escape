@@ -105,7 +105,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </TouchableOpacity>
             )}
           </View>
-          <View style={styles.themeRow}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.themeScrollContent}
+          >
             {Object.keys(THEMES).map(tKey => {
               const th = THEMES[tKey];
               const isSelected = selectedThemeKey === tKey;
@@ -117,24 +121,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     styles.themeButton,
                     {
                       backgroundColor: th.background,
-                      borderColor: isSelected ? theme.accent : theme.boardBorder,
-                      borderWidth: isSelected ? 2.5 : 1,
+                      borderColor: isSelected ? theme.accent : 'rgba(255, 255, 255, 0.15)',
+                      borderWidth: isSelected ? 2.5 : 1.5,
                     },
                   ]}
+                  activeOpacity={0.8}
                 >
                   <View style={[styles.themeDot, { backgroundColor: th.arrowBody }]} />
                   <Text
                     style={[
                       styles.themeName,
-                      { color: th.textPrimary, fontWeight: isSelected ? '800' : '600' },
+                      {
+                        color: isSelected ? '#FFFFFF' : th.textSecondary || '#CBD5E1',
+                        fontWeight: isSelected ? '900' : '700',
+                      },
                     ]}
+                    numberOfLines={1}
                   >
-                    {th.name.split(' ')[0]}
+                    {th.name.replace(/\s*\(.*\)/, '')}
                   </Text>
                 </TouchableOpacity>
               );
             })}
-          </View>
+          </ScrollView>
         </View>
 
         {/* Monetization / In-App Purchases */}
@@ -285,25 +294,30 @@ const styles = StyleSheet.create({
   settingSub: {
     fontSize: 12,
   },
-  themeRow: {
+  themeScrollContent: {
     flexDirection: 'row',
     gap: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 2,
   },
   themeButton: {
-    flex: 1,
     borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     alignItems: 'center',
-    gap: 6,
+    flexDirection: 'row',
+    gap: 8,
+    minWidth: 100,
+    justifyContent: 'center',
   },
   themeDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   themeName: {
     fontSize: 12,
+    letterSpacing: 0.2,
   },
   removeAdsBtn: {
     width: '100%',
