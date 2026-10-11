@@ -190,10 +190,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
         {/* Level Grid */}
         <ScrollView contentContainerStyle={styles.gridContainer} showsVerticalScrollIndicator={false}>
           {levelsInWorld.map(lvlId => {
-            const isDevAllUnlocked =
-              typeof window !== 'undefined' &&
-              new URLSearchParams(window.location.search).get('unlock') === 'all';
-            const isUnlocked = isDevAllUnlocked || lvlId <= unlockedLevel;
+            const isUnlocked = lvlId <= unlockedLevel;
             const isCurrent = lvlId === currentLevelId;
             const stars = levelStars[lvlId] || 0;
 

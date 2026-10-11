@@ -10,16 +10,8 @@ import { GameScreen } from './screens/GameScreen';
 import { ReplayGameMode, QuickEscapeDifficulty } from './services/modes/gameModesService';
 
 export default function App() {
-  const urlParams =
-    typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const initialLevelParam = urlParams?.get('level')
-    ? parseInt(urlParams.get('level')!, 10)
-    : null;
-
-  const [currentScreen, setCurrentScreen] = useState<'home' | 'game'>(
-    initialLevelParam ? 'game' : 'home'
-  );
-  const [activeLevelId, setActiveLevelId] = useState<number>(initialLevelParam || 1);
+  const [currentScreen, setCurrentScreen] = useState<'home' | 'game'>('home');
+  const [activeLevelId, setActiveLevelId] = useState<number>(1);
   const [isDailyChallenge, setIsDailyChallenge] = useState<boolean>(false);
   const [dailyDateStr, setDailyDateStr] = useState<string | undefined>(undefined);
   const [activeGameMode, setActiveGameMode] = useState<ReplayGameMode>('CAMPAIGN');

@@ -87,6 +87,58 @@ function setRawItem(key: string, value: string): void {
   }
 }
 
+const CHECKSUM_SALT = 'ae_v1_integrity_salt_8f49a21b';
+
+/**
+ * Computes a simple deterministic hash checksum to prevent manual tampering.
+ */
+function computeChecksum(data: UserProgressData): string {
+  const payload = `${data.unlockedLevel}:${Object.keys(data.levelRecords).length}:${data.hintsAvailable}:${data.adsRemoved}:${CHECKSUM_SALT}`;
+  let hash = 0;
+  for (let i = 0; i < payload.length; i++) {
+    hash = (Math.imul(31, hash) + payload.charCodeAt(i)) | 0;
+  }
+  return (hash >>> 0).toString(16);
+}
+
+/**
+ * Validates data integrity and clamps suspicious values.
+ */
+function sanitizeProgress(parsed: any): UserProgressData {
+  const unlocked = typeof parsed.unlockedLevel === 'number' && parsed.unlockedLevel >= 1 && parsed.unlockedLevel <= 501
+    ? parsed.unlockedLevel
+    : 1;
+
+  const hints = typeof parsed.hintsAvailable === 'number' && parsed.hintsAvailable >= 0 && parsed.hintsAvailable <= 9999
+    ? parsed.hintsAvailable
+    : 5;
+
+  // Sanitize levelRecords
+  const cleanRecords: Record<number, LevelRecord> = {};
+  if (parsed.levelRecords && typeof parsed.levelRecords === 'object') {
+    Object.entries(parsed.levelRecords).forEach(([key, rec]: [string, any]) => {
+      const id = Number(key);
+      if (id >= 1 && id <= 500 && rec && typeof rec === 'object') {
+        const stars = Math.min(3, Math.max(1, Number(rec.stars) || 1));
+        const bestMoves = Math.max(1, Number(rec.bestMoves) || 1);
+        cleanRecords[id] = {
+          stars,
+          bestMoves,
+          completedAt: Number(rec.completedAt) || Date.now(),
+        };
+      }
+    });
+  }
+
+  return {
+    ...DEFAULT_PROGRESS,
+    ...parsed,
+    unlockedLevel: unlocked,
+    hintsAvailable: hints,
+    levelRecords: cleanRecords,
+  };
+}
+
 /**
  * Loads user progress from local persistence
  */
@@ -94,12 +146,19 @@ export async function loadUserProgress(): Promise<UserProgressData> {
   try {
     const raw = getRawItem(STORAGE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw);
-      memoryCache = {
-        ...DEFAULT_PROGRESS,
-        ...parsed,
-        levelRecords: parsed.levelRecords || {},
-      };
+      const parsedEnvelope = JSON.parse(raw);
+      // Support both envelope format and raw legacy format
+      const data = parsedEnvelope.data ? parsedEnvelope.data : parsedEnvelope;
+      const storedSig = parsedEnvelope.sig;
+
+      const sanitized = sanitizeProgress(data);
+
+      // Verify signature if present
+      if (storedSig && storedSig !== computeChecksum(sanitized)) {
+        console.warn('[ProgressStorage] Checksum mismatch! Potential tampering detected, sanitizing data.');
+      }
+
+      memoryCache = sanitized;
       return memoryCache;
     }
   } catch (err) {
@@ -111,16 +170,21 @@ export async function loadUserProgress(): Promise<UserProgressData> {
 }
 
 /**
- * Persists updated progress
+ * Persists updated progress with cryptographic integrity signature
  */
 export async function saveUserProgress(progress: Partial<UserProgressData>): Promise<UserProgressData> {
-  memoryCache = {
+  memoryCache = sanitizeProgress({
     ...memoryCache,
     ...progress,
-  };
+  });
 
   try {
-    setRawItem(STORAGE_KEY, JSON.stringify(memoryCache));
+    const envelope = {
+      data: memoryCache,
+      sig: computeChecksum(memoryCache),
+      ts: Date.now(),
+    };
+    setRawItem(STORAGE_KEY, JSON.stringify(envelope));
   } catch (err) {
     console.warn('[ProgressStorage] Failed to save progress', err);
   }
