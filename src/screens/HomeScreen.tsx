@@ -26,15 +26,20 @@ import { admobService } from '../services/ads/admobService';
 import { LevelSelectModal } from '../components/game/LevelSelectModal';
 import { AchievementsModal } from '../components/game/AchievementsModal';
 import { SettingsModal } from '../components/game/SettingsModal';
+import { StatisticsModal } from '../components/game/StatisticsModal';
 import { BannerAd } from '../components/ads/BannerAd';
 import { DailyChallengeCard } from '../components/daily/DailyChallengeCard';
-import { getLocalDateString } from '../services/daily/dailyChallengeService';
+import { dailyChallengeService, getLocalDateString, DailyChallengeState } from '../services/daily/dailyChallengeService';
+import { getPlayerStatsSummary, PlayerStatsSummary } from '../services/progression/progressionService';
+import { UserProgressData, DEFAULT_PROGRESS } from '../services/storage/progressStorage';
 
 interface HomeScreenProps {
   onStartGame: (levelId: number, isDaily?: boolean, dailyDate?: string) => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
+  const [progressData, setProgressData] = useState<UserProgressData>(DEFAULT_PROGRESS);
+  const [dailyState, setDailyState] = useState<DailyChallengeState | undefined>(undefined);
   const [unlockedLevel, setUnlockedLevel] = useState(1);
   const [levelStars, setLevelStars] = useState<Record<number, number>>({});
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>('dawn');
@@ -47,10 +52,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
   const [isLevelSelectOpen, setIsLevelSelectOpen] = useState(false);
   const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isStatisticsOpen, setIsStatisticsOpen] = useState(false);
 
   // Load Persisted Data
   const refreshProgress = useCallback(async () => {
     const saved = await loadUserProgress();
+    setProgressData(saved);
+    const dState = await dailyChallengeService.getState();
+    setDailyState(dState);
+
     setUnlockedLevel(saved.unlockedLevel);
     setSelectedThemeKey(saved.selectedTheme);
     setSoundEnabled(saved.soundEnabled);
@@ -76,6 +86,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
   const totalEarnedStars = useMemo(() => {
     return Object.values(levelStars).reduce((sum, s) => sum + s, 0);
   }, [levelStars]);
+
+  const statsSummary: PlayerStatsSummary = useMemo(() => {
+    return getPlayerStatsSummary(progressData, dailyState);
+  }, [progressData, dailyState]);
 
   const handleManualSave = useCallback(() => {
     audioService.playClick();
@@ -130,7 +144,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
     setLevelStars({});
     setAdsRemoved(false);
     admobService.setAdsRemoved(false);
-  }, []);
+    refreshProgress();
+  }, [refreshProgress]);
 
   return (
     <SafeAreaView style={[styles.rootContainer, { backgroundColor: theme.background }]}>
@@ -144,21 +159,32 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
           <Text style={styles.gameSubtitle}>Casual Logic & Maze Puzzle</Text>
         </View>
 
-        {/* Player Stats Mini-HUD */}
+        {/* Player Stats Mini-HUD with Rank */}
         <View style={styles.hudCard}>
+          <TouchableOpacity
+            style={styles.hudStat}
+            onPress={() => {
+              audioService.playClick();
+              setIsStatisticsOpen(true);
+            }}
+            activeOpacity={0.75}
+          >
+            <Text style={[styles.hudValue, { color: statsSummary.currentRank.badgeColor }]}>
+              {statsSummary.currentRank.icon} {statsSummary.currentRank.title}
+            </Text>
+            <Text style={styles.hudLabel}>{statsSummary.totalXp.toLocaleString()} XP • Stats ↗</Text>
+          </TouchableOpacity>
+          <View style={styles.hudDivider} />
           <View style={styles.hudStat}>
-            <Text style={styles.hudValue}>{unlockedLevel}</Text>
-            <Text style={styles.hudLabel}>Current Level</Text>
+            <Text style={styles.hudValue}>
+              {statsSummary.levelsCompleted} <Text style={{ fontSize: 13, color: '#94A3B8' }}>/ 500</Text>
+            </Text>
+            <Text style={styles.hudLabel}>Cleared</Text>
           </View>
           <View style={styles.hudDivider} />
           <View style={styles.hudStat}>
-            <Text style={styles.hudValue}>★ {totalEarnedStars}</Text>
+            <Text style={[styles.hudValue, { color: '#F59E0B' }]}>★ {totalEarnedStars}</Text>
             <Text style={styles.hudLabel}>Total Stars</Text>
-          </View>
-          <View style={styles.hudDivider} />
-          <View style={styles.hudStat}>
-            <Text style={styles.hudValue}>{TOTAL_LEVELS}</Text>
-            <Text style={styles.hudLabel}>Max Levels</Text>
           </View>
         </View>
 
@@ -197,7 +223,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
 
         {/* 2x2 Bento Tiles Grid */}
         <View style={styles.bentoGrid}>
-          {/* Tile 1: Level Select */}
+          {/* Tile 1: Level Packs */}
           <TouchableOpacity
             style={styles.bentoTile}
             onPress={() => {
@@ -209,11 +235,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
             <View style={[styles.tileIconCircle, { backgroundColor: 'rgba(59, 130, 246, 0.2)' }]}>
               <Text style={styles.tileIcon}>🗺️</Text>
             </View>
-            <Text style={styles.tileTitle}>Select Level</Text>
-            <Text style={styles.tileSubtitle}>500 Puzzles • 10 Chapters</Text>
+            <Text style={styles.tileTitle}>Level Packs</Text>
+            <Text style={styles.tileSubtitle}>6 Worlds • 500 Puzzles</Text>
           </TouchableOpacity>
 
-          {/* Tile 2: Play Games Achievements */}
+          {/* Tile 2: Statistics Dashboard */}
+          <TouchableOpacity
+            style={styles.bentoTile}
+            onPress={() => {
+              audioService.playClick();
+              setIsStatisticsOpen(true);
+            }}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.tileIconCircle, { backgroundColor: 'rgba(16, 185, 129, 0.2)' }]}>
+              <Text style={styles.tileIcon}>📊</Text>
+            </View>
+            <Text style={styles.tileTitle}>Statistics</Text>
+            <Text style={styles.tileSubtitle}>KPIs & Career Records</Text>
+          </TouchableOpacity>
+
+          {/* Tile 3: Play Games Achievements */}
           <TouchableOpacity
             style={styles.bentoTile}
             onPress={() => {
@@ -229,7 +271,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
             <Text style={styles.tileSubtitle}>Google Play XP Badges</Text>
           </TouchableOpacity>
 
-          {/* Tile 3: Settings */}
+          {/* Tile 4: Settings */}
           <TouchableOpacity
             style={styles.bentoTile}
             onPress={() => {
@@ -244,20 +286,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
             <Text style={styles.tileTitle}>Settings</Text>
             <Text style={styles.tileSubtitle}>Audio, Themes & Store</Text>
           </TouchableOpacity>
-
-          {/* Tile 4: Save & Cloud Sync */}
-          <TouchableOpacity
-            style={styles.bentoTile}
-            onPress={handleManualSave}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.tileIconCircle, { backgroundColor: 'rgba(16, 185, 129, 0.2)' }]}>
-              <Text style={styles.tileIcon}>☁️</Text>
-            </View>
-            <Text style={styles.tileTitle}>Save Progress</Text>
-            <Text style={[styles.tileSubtitle, { color: '#34D399' }]}>{syncStatusText}</Text>
-          </TouchableOpacity>
         </View>
+
+        {/* Quick Cloud Save Bar */}
+        <TouchableOpacity
+          style={styles.cloudSaveBar}
+          onPress={handleManualSave}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.cloudSaveIcon}>☁️</Text>
+          <Text style={styles.cloudSaveText}>
+            Cloud Sync Status: <Text style={styles.cloudSaveStatus}>{syncStatusText}</Text>
+          </Text>
+          <Text style={styles.cloudSaveAction}>Save Now</Text>
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Bottom Banner Ad */}
@@ -275,6 +317,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
         theme={theme}
         onSelectLevel={lvl => onStartGame(lvl)}
         onClose={() => setIsLevelSelectOpen(false)}
+      />
+
+      {/* Statistics Dashboard Modal */}
+      <StatisticsModal
+        visible={isStatisticsOpen}
+        summary={statsSummary}
+        levelRecords={progressData.levelRecords}
+        unlockedLevel={unlockedLevel}
+        theme={theme}
+        onClose={() => setIsStatisticsOpen(false)}
       />
 
       {/* Google Play Achievements Modal */}
@@ -481,5 +533,36 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     marginTop: 2,
     fontWeight: '500',
+  },
+  cloudSaveBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(30, 41, 59, 0.45)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    marginTop: 12,
+    marginBottom: 4,
+    gap: 10,
+  },
+  cloudSaveIcon: {
+    fontSize: 16,
+  },
+  cloudSaveText: {
+    flex: 1,
+    fontSize: 11,
+    color: '#94A3B8',
+    fontWeight: '500',
+  },
+  cloudSaveStatus: {
+    color: '#34D399',
+    fontWeight: '700',
+  },
+  cloudSaveAction: {
+    fontSize: 11,
+    color: '#38BDF8',
+    fontWeight: '800',
   },
 });

@@ -189,7 +189,13 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             const dateStr = dailyDateStr || getLocalDateString();
             dailyChallengeService.recordDailyCompletion(dateStr, stars, nextState.totalTaps);
           } else {
-            recordLevelCompletion(currentLevelId, stars, nextState.totalTaps);
+            recordLevelCompletion(
+              currentLevelId,
+              stars,
+              nextState.totalTaps,
+              currentLevelData.arrows.length,
+              25
+            );
           }
           admobService.onLevelCompleted();
 

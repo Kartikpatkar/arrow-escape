@@ -17,6 +17,9 @@ export interface UserProgressData {
   soundEnabled: boolean;
   hapticsEnabled: boolean;
   adsRemoved: boolean;
+  totalMovesMade: number;
+  totalArrowsEscaped: number;
+  totalPlayTimeSeconds: number;
 }
 
 export const STORAGE_KEY = '@arrow_escape_user_progress_v1';
@@ -29,6 +32,9 @@ export const DEFAULT_PROGRESS: UserProgressData = {
   soundEnabled: true,
   hapticsEnabled: true,
   adsRemoved: false,
+  totalMovesMade: 0,
+  totalArrowsEscaped: 0,
+  totalPlayTimeSeconds: 0,
 };
 
 // In-memory backing store for tests / SSR / non-browser environments
@@ -114,7 +120,9 @@ export async function saveUserProgress(progress: Partial<UserProgressData>): Pro
 export async function recordLevelCompletion(
   levelId: number,
   stars: number,
-  moves: number
+  moves: number,
+  arrowsCount: number = 0,
+  playDurationSec: number = 0
 ): Promise<UserProgressData> {
   const currentRecord = memoryCache.levelRecords[levelId];
   const bestStars = currentRecord ? Math.max(currentRecord.stars, stars) : stars;
@@ -130,10 +138,35 @@ export async function recordLevelCompletion(
   };
 
   const nextUnlocked = Math.max(memoryCache.unlockedLevel, levelId + 1);
+  const nextMoves = (memoryCache.totalMovesMade || 0) + moves;
+  const nextArrows = (memoryCache.totalArrowsEscaped || 0) + (arrowsCount > 0 ? arrowsCount : moves);
+  const nextPlayTime = (memoryCache.totalPlayTimeSeconds || 0) + playDurationSec;
 
   return saveUserProgress({
     unlockedLevel: nextUnlocked,
     levelRecords: updatedRecords,
+    totalMovesMade: nextMoves,
+    totalArrowsEscaped: nextArrows,
+    totalPlayTimeSeconds: nextPlayTime,
+  });
+}
+
+/**
+ * Increments cumulative moves, arrows, and playtime stats
+ */
+export async function incrementGameplayCounters(
+  movesDelta: number,
+  arrowsDelta: number,
+  playTimeDeltaSec: number = 0
+): Promise<UserProgressData> {
+  const nextMoves = (memoryCache.totalMovesMade || 0) + movesDelta;
+  const nextArrows = (memoryCache.totalArrowsEscaped || 0) + arrowsDelta;
+  const nextPlayTime = (memoryCache.totalPlayTimeSeconds || 0) + playTimeDeltaSec;
+
+  return saveUserProgress({
+    totalMovesMade: nextMoves,
+    totalArrowsEscaped: nextArrows,
+    totalPlayTimeSeconds: nextPlayTime,
   });
 }
 
