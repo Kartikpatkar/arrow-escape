@@ -32,6 +32,7 @@ import { hapticsService } from '../services/haptics/hapticsService';
 import { admobService } from '../services/ads/admobService';
 import { billingService } from '../services/billing/billingService';
 import { playGamesService } from '../services/playgames/playGamesService';
+import { monetizationAnalytics } from '../services/analytics/monetizationAnalytics';
 import { Board } from '../components/game/Board';
 import { GameHeader } from '../components/game/GameHeader';
 import { GameControls } from '../components/game/GameControls';
@@ -372,6 +373,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     if (gameState.isCompleted) return;
 
     if (hintsAvailable <= 0) {
+      monetizationAnalytics.trackAdOffered('hints');
       setIsRewardedPromptOpen(true);
       return;
     }
@@ -398,21 +400,24 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     [gameState.activeArrows, gameState.level]
   );
 
-  // Watch Rewarded Ad for Free Hint
+  // Watch Rewarded Ad for Free Hint (Voluntary request when stuck)
   const handleWatchRewardedAd = useCallback(async () => {
     const reward = await admobService.showRewardedAd();
     if (reward) {
+      monetizationAnalytics.trackAdCompleted('hints');
       setHintsAvailable(prev => prev + reward.amount);
       audioService.playHintChime();
     }
   }, []);
 
-  // Watch Rewarded Ad for Victory Completion Gift (+2 hints)
+  // Watch Rewarded Ad for Victory Completion Gift (+2 hints) (Secondary voluntary bonus)
   const handleClaimVictoryGift = useCallback(async () => {
     audioService.playClick();
     hapticsService.vibrateLight();
+    monetizationAnalytics.trackAdOffered('bonus_xp');
     const reward = await admobService.showRewardedAd();
     if (reward) {
+      monetizationAnalytics.trackAdCompleted('bonus_xp');
       const nextHints = await updateHintsAvailable(1);
       setHintsAvailable(nextHints);
       setIsVictoryGiftClaimed(true);
@@ -425,6 +430,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const handlePurchaseRemoveAds = useCallback(async () => {
     const res = await billingService.purchaseRemoveAds();
     if (res.success) {
+      monetizationAnalytics.trackProductPurchased('remove_ads', 1.99);
       setAdsRemoved(true);
       admobService.setAdsRemoved(true);
       audioService.playVictoryFanfare();

@@ -7,6 +7,7 @@ import { UserProgressData } from '../storage/progressStorage';
 import { DailyChallengeState } from '../daily/dailyChallengeService';
 
 export type CosmeticCategory = 'skin' | 'theme' | 'effect';
+export type CosmeticTier = 'free' | 'milestone' | 'vip';
 
 export interface CosmeticItem {
   readonly id: string; // e.g. 'skin:classic', 'theme:ocean'
@@ -19,6 +20,8 @@ export interface CosmeticItem {
   readonly unlockRequirementText: string;
   readonly isUnlockedByDefault?: boolean;
   readonly isLight?: boolean;
+  readonly isVipCollection?: boolean;
+  readonly tier?: CosmeticTier;
   readonly checkMilestone: (progress: UserProgressData, dailyState?: DailyChallengeState | null) => boolean;
 }
 
@@ -33,6 +36,8 @@ export const ARROW_SKINS: readonly CosmeticItem[] = [
     previewColor: '#38BDF8',
     unlockRequirementText: 'Unlocked by default',
     isUnlockedByDefault: true,
+    tier: 'free',
+    isVipCollection: false,
     checkMilestone: () => true,
   },
   {
@@ -43,7 +48,9 @@ export const ARROW_SKINS: readonly CosmeticItem[] = [
     description: 'Polished titanium silver with specular chrome highlights.',
     icon: '🛡️',
     previewColor: '#E2E8F0',
-    unlockRequirementText: 'Complete World 1 (Level 30)',
+    unlockRequirementText: 'Complete World 1 (Level 30) or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: progress => progress.unlockedLevel > 30,
   },
   {
@@ -54,7 +61,9 @@ export const ARROW_SKINS: readonly CosmeticItem[] = [
     description: 'Faceted prismatic quartz with iridescent glow.',
     icon: '💎',
     previewColor: '#67E8F9',
-    unlockRequirementText: 'Complete World 2 (Level 80)',
+    unlockRequirementText: 'Complete World 2 (Level 80) or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: progress => progress.unlockedLevel > 80,
   },
   {
@@ -65,7 +74,9 @@ export const ARROW_SKINS: readonly CosmeticItem[] = [
     description: 'Molten magma arrows with blazing heat aura.',
     icon: '🔥',
     previewColor: '#F97316',
-    unlockRequirementText: 'Reach Level 100',
+    unlockRequirementText: 'Reach Level 100 or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: progress => progress.unlockedLevel >= 100,
   },
   {
@@ -76,7 +87,9 @@ export const ARROW_SKINS: readonly CosmeticItem[] = [
     description: 'Deep starlight cosmos with celestial dust swirls.',
     icon: '🌌',
     previewColor: '#A855F7',
-    unlockRequirementText: '7-Day Daily Streak or 100 Stars',
+    unlockRequirementText: '7-Day Daily Streak, 100 Stars, or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: (progress, daily) => {
       const streak = daily?.longestStreak || 0;
       const stars = Object.values(progress.levelRecords || {}).reduce((s, r) => s + (r?.stars || 0), 0);
@@ -91,7 +104,9 @@ export const ARROW_SKINS: readonly CosmeticItem[] = [
     description: 'Monochrome geometry with pure architectural lines.',
     icon: '📐',
     previewColor: '#71717A',
-    unlockRequirementText: 'Complete 3 Daily Challenges',
+    unlockRequirementText: 'Complete 3 Daily Challenges or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: (_progress, daily) => {
       const completedCount = Object.values(daily?.records || {}).filter(r => r.completed).length;
       return completedCount >= 3;
@@ -110,6 +125,8 @@ export const BOARD_THEMES: readonly CosmeticItem[] = [
     previewColor: '#1B6474',
     unlockRequirementText: 'Unlocked by default',
     isUnlockedByDefault: true,
+    tier: 'free',
+    isVipCollection: false,
     checkMilestone: () => true,
   },
   {
@@ -123,6 +140,8 @@ export const BOARD_THEMES: readonly CosmeticItem[] = [
     isLight: true,
     unlockRequirementText: 'Unlocked by default (Light Mode)',
     isUnlockedByDefault: true,
+    tier: 'free',
+    isVipCollection: false,
     checkMilestone: () => true,
   },
   {
@@ -134,6 +153,8 @@ export const BOARD_THEMES: readonly CosmeticItem[] = [
     icon: '🌙',
     previewColor: '#182234',
     unlockRequirementText: 'Complete Level 10',
+    tier: 'milestone',
+    isVipCollection: false,
     checkMilestone: progress => progress.unlockedLevel > 10,
   },
   {
@@ -146,6 +167,8 @@ export const BOARD_THEMES: readonly CosmeticItem[] = [
     previewColor: '#E0F3E4',
     isLight: true,
     unlockRequirementText: 'Complete Level 20',
+    tier: 'milestone',
+    isVipCollection: false,
     checkMilestone: progress => progress.unlockedLevel > 20,
   },
   {
@@ -158,6 +181,8 @@ export const BOARD_THEMES: readonly CosmeticItem[] = [
     previewColor: '#E0F2FE',
     isLight: true,
     unlockRequirementText: 'Complete Level 35',
+    tier: 'milestone',
+    isVipCollection: false,
     checkMilestone: progress => progress.unlockedLevel > 35,
   },
   {
@@ -168,7 +193,9 @@ export const BOARD_THEMES: readonly CosmeticItem[] = [
     description: 'Bioluminescent deep sea turquoise and teal corals.',
     icon: '🌊',
     previewColor: '#0E4459',
-    unlockRequirementText: 'Complete 3 Daily Challenges',
+    unlockRequirementText: 'Complete 3 Daily Challenges or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: (_progress, daily) => {
       const count = Object.values(daily?.records || {}).filter(r => r.completed).length;
       return count >= 3;
@@ -182,7 +209,9 @@ export const BOARD_THEMES: readonly CosmeticItem[] = [
     description: 'Lush emerald foliage and soothing woodland depth.',
     icon: '🌲',
     previewColor: '#17472E',
-    unlockRequirementText: 'Complete Level 50',
+    unlockRequirementText: 'Complete Level 50 or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: progress => progress.unlockedLevel > 50,
   },
   {
@@ -193,7 +222,9 @@ export const BOARD_THEMES: readonly CosmeticItem[] = [
     description: 'Ultra-vivid cyan and laser magenta neon wireframes.',
     icon: '⚡',
     previewColor: '#0F172A',
-    unlockRequirementText: 'Complete Level 60',
+    unlockRequirementText: 'Complete Level 60 or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: progress => progress.unlockedLevel > 60,
   },
   {
@@ -204,7 +235,9 @@ export const BOARD_THEMES: readonly CosmeticItem[] = [
     description: 'Ultra-minimal dark grey monochromatic slate stone.',
     icon: '⬛',
     previewColor: '#24242A',
-    unlockRequirementText: 'Earn 75 Stars',
+    unlockRequirementText: 'Earn 75 Stars or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: progress => {
       const stars = Object.values(progress.levelRecords || {}).reduce((s, r) => s + (r?.stars || 0), 0);
       return stars >= 75;
@@ -218,7 +251,9 @@ export const BOARD_THEMES: readonly CosmeticItem[] = [
     description: 'Interstellar purple cosmos with nebula dust.',
     icon: '🚀',
     previewColor: '#231846',
-    unlockRequirementText: '7-Day Daily Challenge Streak',
+    unlockRequirementText: '7-Day Daily Challenge Streak or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: (_progress, daily) => (daily?.longestStreak || 0) >= 7,
   },
   {
@@ -229,7 +264,9 @@ export const BOARD_THEMES: readonly CosmeticItem[] = [
     description: 'High-contrast synthetic yellow, crimson and cyan cyber city.',
     icon: '🤖',
     previewColor: '#2D1540',
-    unlockRequirementText: 'Complete World 3 (Level 150)',
+    unlockRequirementText: 'Complete World 3 (Level 150) or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: progress => progress.unlockedLevel > 150,
   },
 ];
@@ -245,6 +282,8 @@ export const ESCAPE_EFFECTS: readonly CosmeticItem[] = [
     previewColor: '#FDE047',
     unlockRequirementText: 'Unlocked by default',
     isUnlockedByDefault: true,
+    tier: 'free',
+    isVipCollection: false,
     checkMilestone: () => true,
   },
   {
@@ -255,7 +294,9 @@ export const ESCAPE_EFFECTS: readonly CosmeticItem[] = [
     description: 'Radiant golden starlight shower following the arrow.',
     icon: '✨',
     previewColor: '#FBBF24',
-    unlockRequirementText: 'Complete Level 15',
+    unlockRequirementText: 'Complete Level 15 or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: progress => progress.unlockedLevel > 15,
   },
   {
@@ -266,7 +307,9 @@ export const ESCAPE_EFFECTS: readonly CosmeticItem[] = [
     description: 'High-speed luminous cyan & magenta hyper-streak.',
     icon: '⚡',
     previewColor: '#06B6D4',
-    unlockRequirementText: 'Complete Level 45',
+    unlockRequirementText: 'Complete Level 45 or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: progress => progress.unlockedLevel > 45,
   },
   {
@@ -277,7 +320,9 @@ export const ESCAPE_EFFECTS: readonly CosmeticItem[] = [
     description: 'Pop explosion of multicolored miniature celebration stars.',
     icon: '🌟',
     previewColor: '#EC4899',
-    unlockRequirementText: 'Complete 5 Daily Challenges',
+    unlockRequirementText: 'Complete 5 Daily Challenges or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: (_progress, daily) => {
       const count = Object.values(daily?.records || {}).filter(r => r.completed).length;
       return count >= 5;
@@ -291,7 +336,9 @@ export const ESCAPE_EFFECTS: readonly CosmeticItem[] = [
     description: 'Prismatic diamond shards scattering across the screen.',
     icon: '💠',
     previewColor: '#A855F7',
-    unlockRequirementText: 'Complete World 2 (Level 80)',
+    unlockRequirementText: 'Complete World 2 (Level 80) or VIP Pass',
+    tier: 'vip',
+    isVipCollection: true,
     checkMilestone: progress => progress.unlockedLevel > 80,
   },
 ];
@@ -339,3 +386,23 @@ export function getUnlockedCosmeticIds(
   });
   return unlocked;
 }
+
+/**
+ * All cosmetics belonging to the VIP Collection.
+ */
+export const VIP_COLLECTION_ITEMS: readonly CosmeticItem[] = ALL_COSMETICS.filter(
+  item => item.isVipCollection
+);
+
+export function getVipCollectionCatalog(): {
+  themes: readonly CosmeticItem[];
+  skins: readonly CosmeticItem[];
+  effects: readonly CosmeticItem[];
+} {
+  return {
+    themes: BOARD_THEMES.filter(t => t.isVipCollection),
+    skins: ARROW_SKINS.filter(s => s.isVipCollection),
+    effects: ESCAPE_EFFECTS.filter(e => e.isVipCollection),
+  };
+}
+

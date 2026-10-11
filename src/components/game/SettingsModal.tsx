@@ -3,9 +3,10 @@
  * Controls for audio, haptics, theme selection, and progress reset.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Switch, ScrollView } from 'react-native';
 import { THEMES, ColorTheme } from '../../theme/colors';
+import { monetizationAnalytics } from '../../services/analytics/monetizationAnalytics';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -41,6 +42,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
 }) => {
   const [confirmReset, setConfirmReset] = useState(false);
+
+  useEffect(() => {
+    if (visible && !adsRemoved) {
+      monetizationAnalytics.trackProductOffered('remove_ads');
+    }
+  }, [visible, adsRemoved]);
 
   if (!visible) return null;
 

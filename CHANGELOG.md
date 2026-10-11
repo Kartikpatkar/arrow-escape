@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.2] - 2026-10-11
+
+### 💎 VIP Pass Value, Voluntary Rewarded Ads & Monetization Analytics
+
+#### Added & Improved
+- **Interactive VIP Cosmetics Previewer & VIP Collection Showcase (`src/components/game/CosmeticsModal.tsx`, `src/services/cosmetics/cosmeticsCatalog.ts`)**
+  - Added live top preview stage allowing players to test-drive all locked board themes, arrow skins, and escape effects before purchasing.
+  - Dedicated **👑 VIP Vault** tab displaying the complete premium bundle: 6 Premium Board Themes (Deep Ocean, Forest, Cyber Neon, Slate Noir, Space Nebula, Cyberpunk 2077), 5 Premium Arrow Skins (Metallic Chrome, Crystal Prism, Fire Blaze, Galaxy Cosmic, Minimalist Bauhaus), and 4 Premium Escape Effects (Sparkle Burst, Neon Speed Trail, Star Nova, Crystal Shatter).
+  - Clear visual categorization on every cosmetic card: `FREE STARTER`, `🏆 GAMEPLAY REWARD` (star/level milestones), and `💎 VIP COLLECTION`.
+  - Accurate VIP Pass bundle description ($2.99 lifetime unlock for all 15 premium items + future cosmetics).
+- **Voluntary Rewarded Ad Architecture (`src/screens/GameScreen.tsx`, `src/components/daily/PastDailiesModal.tsx`)**
+  - Prioritized user-initiated reward moments:
+    1. Voluntary Hint Assistance: Triggered only when the player has 0 hints remaining and chooses to watch for +1 free hint.
+    2. Missed Daily Challenges: Voluntary replay unlock on past calendar days.
+    3. Secondary Victory Bonus Gift: Voluntary gift claim on level win screen.
+  - Strict non-intrusive policy: Zero automatic rewarded popups on puzzle failure, move collisions, or board restarts.
+- **Monetization & Rewarded Ad Analytics Engine (`src/services/analytics/monetizationAnalytics.ts`, `src/components/game/StatisticsModal.tsx`)**
+  - Offline-first aggregate metric tracking:
+    - Rewarded ads offered vs completed (overall and by placement: hints, past dailies, bonus gifts).
+    - Average rewarded ads completed per active player.
+    - Remove Ads ($1.99) purchase conversion rate.
+    - VIP Pass ($2.99) purchase conversion rate.
+    - Estimated Revenue & ARPDAU (Average Revenue Per Daily Active User).
+  - Live **Monetization & Rewarded Ads** KPI dashboard integrated into `StatisticsModal.tsx`.
+
+---
+
 ## [1.2.1] - 2026-10-11
 
 ### 🛠️ UX, Navigation, Theme Engine & Native Polish

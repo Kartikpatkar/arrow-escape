@@ -23,6 +23,7 @@ import {
 import { admobService } from '../../services/ads/admobService';
 import { audioService } from '../../services/audio/audioService';
 import { hapticsService } from '../../services/haptics/hapticsService';
+import { monetizationAnalytics } from '../../services/analytics/monetizationAnalytics';
 
 interface PastDailiesModalProps {
   visible: boolean;
@@ -75,11 +76,13 @@ export const PastDailiesModal: React.FC<PastDailiesModalProps> = ({
     }
 
     // Require rewarded ad to unlock past missed day
+    monetizationAnalytics.trackAdOffered('past_daily');
     setIsWatchingAd(true);
     const reward = await admobService.showRewardedAd();
     setIsWatchingAd(false);
 
     if (reward) {
+      monetizationAnalytics.trackAdCompleted('past_daily');
       dailyChallengeService.unlockPastDailyLevel(dateStr);
       setDailyState(dailyChallengeService.getState());
       audioService.playVictoryFanfare();

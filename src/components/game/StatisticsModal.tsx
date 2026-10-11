@@ -15,6 +15,7 @@ import {
 import { ColorTheme } from '../../theme/colors';
 import { PlayerStatsSummary } from '../../services/progression/progressionService';
 import { WORLDS, calculateWorldProgress } from '../../data/worlds/worldData';
+import { monetizationAnalytics } from '../../services/analytics/monetizationAnalytics';
 
 interface StatisticsModalProps {
   visible: boolean;
@@ -46,6 +47,7 @@ export const StatisticsModal: React.FC<StatisticsModalProps> = ({
   if (!visible) return null;
 
   const { currentRank, nextRank, rankProgressPercent, xpInRank, xpRequiredForNext } = summary;
+  const monetization = monetizationAnalytics.getMetricsSummary();
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -266,6 +268,67 @@ export const StatisticsModal: React.FC<StatisticsModalProps> = ({
                   </View>
                 );
               })}
+            </View>
+
+            {/* Monetization & Rewarded Ad Metrics */}
+            <View
+              style={[
+                styles.detailSection,
+                {
+                  backgroundColor: theme.surfaceElevated,
+                  borderColor: theme.boardBorder,
+                  marginTop: 8,
+                },
+              ]}
+            >
+              <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+                MONETIZATION & REWARDED ADS
+              </Text>
+
+              <View style={styles.metricRow}>
+                <Text style={[styles.metricName, { color: theme.textPrimary }]}>
+                  🎬 Rewarded Ads Completed
+                </Text>
+                <Text style={[styles.metricVal, { color: theme.accent }]}>
+                  {monetization.rewardedAdsCompleted} / {monetization.rewardedAdsOffered}
+                </Text>
+              </View>
+
+              <View style={styles.metricRow}>
+                <Text style={[styles.metricName, { color: theme.textPrimary }]}>
+                  📊 Avg Rewarded / Active Player
+                </Text>
+                <Text style={[styles.metricVal, { color: theme.textPrimary }]}>
+                  {monetization.avgRewardedPerActivePlayer}
+                </Text>
+              </View>
+
+              <View style={styles.metricRow}>
+                <Text style={[styles.metricName, { color: theme.textPrimary }]}>
+                  💎 Remove Ads Conversion
+                </Text>
+                <Text style={[styles.metricVal, { color: '#38BDF8' }]}>
+                  {monetization.removeAdsConversionPercent}% ({monetization.removeAdsPurchased}/{monetization.removeAdsOffered})
+                </Text>
+              </View>
+
+              <View style={styles.metricRow}>
+                <Text style={[styles.metricName, { color: theme.textPrimary }]}>
+                  👑 VIP Pass Conversion
+                </Text>
+                <Text style={[styles.metricVal, { color: '#F59E0B' }]}>
+                  {monetization.vipPassConversionPercent}% ({monetization.vipPassPurchased}/{monetization.vipPassOffered})
+                </Text>
+              </View>
+
+              <View style={[styles.metricRow, { borderBottomWidth: 0 }]}>
+                <Text style={[styles.metricName, { color: theme.textPrimary }]}>
+                  💵 Estimated ARPDAU
+                </Text>
+                <Text style={[styles.metricVal, { color: '#10B981' }]}>
+                  ${monetization.arpdau.toFixed(3)} (${monetization.totalRevenueUsd.toFixed(2)} rev)
+                </Text>
+              </View>
             </View>
           </ScrollView>
         </View>
