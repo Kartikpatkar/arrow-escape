@@ -72,7 +72,7 @@ arrow-escape/
 │   │   └── playgames/                # Google Play Games achievements bridge
 │   ├── screens/                      # HomeScreen hub & GameScreen gameplay
 │   └── theme/                        # Candy Arcade, Midnight, Neon palettes
-└── tests/                            # 12 Jest test suites covering engine & services
+└── tests/                            # 19 Jest test suites covering engine, mechanics & services
 ```
 
 ---
@@ -102,7 +102,7 @@ npm run dev
 
 ### Running Unit Tests & Level Solvers
 ```bash
-# Run all 12 unit test suites (49 unit tests)
+# Run all 19 unit test suites (105 unit tests)
 npm test
 
 # Run tests with code coverage report
@@ -150,13 +150,15 @@ cd android && ./gradlew bundleRelease
 
 Before merging branches into `main`:
 
-- [x] All 11 Jest test suites passing (`npm test` -> 45/45 green).
-- [x] All 30 levels pass backtracking solver verification (`npm run validate:levels`).
+- [x] All 19 Jest test suites passing (`npm test` -> 105/105 green).
+- [x] All 500 levels pass backtracking solver and automated pipeline verification.
 - [x] TypeScript builds without errors (`npm run build`).
 - [x] Web production bundle compiles cleanly (`npm run build:web`).
 - [x] Progress persistence validated across restarts (`@arrow_escape_user_progress_v1`).
 - [x] Procedural WebAudio functions without external asset latency.
 - [x] Ad pacing engine enforces non-intrusive 4-level interstitial intervals.
+- [x] Settings modal and theme selector verified across all screen sizes.
+- [x] Arrow escape trajectory tuned for clear human visibility (720ms duration).
 - [x] Google Play Store listing and Privacy Policy documents up to date.
 
 ---

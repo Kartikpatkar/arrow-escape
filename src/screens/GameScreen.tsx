@@ -214,11 +214,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         audioService.playEscapePop(nextState.escapedArrowIds.length);
         hapticsService.vibrateLight();
 
-        // Remove from animation track after smooth swoosh (480ms)
+        // Remove from animation track after smooth swoosh (750ms)
         setTimeout(() => {
           setEscapingArrows(prev => prev.filter(a => a.id !== arrowId));
           setEscapingArrowIds(prev => prev.filter(id => id !== arrowId));
-        }, 480);
+        }, 750);
 
         // Level Complete
         if (nextState.isCompleted) {

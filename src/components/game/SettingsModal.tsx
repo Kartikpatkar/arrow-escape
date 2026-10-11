@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Switch } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Switch, ScrollView } from 'react-native';
 import { THEMES, ColorTheme } from '../../theme/colors';
 
 interface SettingsModalProps {
@@ -60,8 +60,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Toggles */}
-        <View style={styles.section}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={styles.bodyScroll}
+          contentContainerStyle={{ paddingBottom: 10 }}
+        >
+          {/* Toggles */}
+          <View style={styles.section}>
           <View style={[styles.settingRow, { borderBottomColor: theme.boardBorder }]}>
             <View style={styles.labelCol}>
               <Text style={[styles.settingLabel, { color: theme.textPrimary }]}>🔊 Sound Effects</Text>
@@ -108,6 +113,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
+            nestedScrollEnabled={true}
             contentContainerStyle={styles.themeScrollContent}
           >
             {Object.keys(THEMES).map(tKey => {
@@ -216,6 +222,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             Arrow Escape v1.0.0 • Created with care by Kartik Patkar
           </Text>
         </View>
+        </ScrollView>
       </View>
     </View>
   );
@@ -237,6 +244,7 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 400,
+    maxHeight: '88%',
     borderRadius: 28,
     borderWidth: 2,
     padding: 24,
@@ -244,6 +252,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 24,
     elevation: 10,
+  },
+  bodyScroll: {
+    flexShrink: 1,
   },
   headerRow: {
     flexDirection: 'row',

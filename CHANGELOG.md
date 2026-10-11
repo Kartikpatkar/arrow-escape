@@ -53,6 +53,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Save-Game Reliability Test Suite (`tests/services/saveGameReliability.test.ts`)**
   - Verified career score protection against accidental downgrades during replays and simulated force-stops.
 
+#### Native & UI Polish
+- **Settings Modal Render & Scroll Fix**: Fixed missing `ScrollView` import that caused the settings modal to render blank; wrapped modal card in vertical scroll container with `nestedScrollEnabled` on theme picker for smooth rendering across all screen sizes.
+- **Arrow Flyout Visibility & Speed Tuning**: Reduced arrow flight speed from 480ms to 720ms with delayed fadeout curve and synced 750ms cleanup timeout, ensuring escape trajectories are clearly readable to human eyes.
+- **Settings Visual Themes Pill UI**: Redesigned theme selector from compressed vertical pills into a horizontal, smoothly scrolling card row with full titles and dot indicators.
+- **Level Select Progress Overflow**: Fixed flex sizing and text clipping on World progress card header.
+- **Hardware Vibration Access**: Added `android.permission.VIBRATE` to `AndroidManifest.xml` enabling physical haptics on real devices.
+- **Portrait Orientation Lock**: Set `android:screenOrientation="portrait"` on MainActivity to prevent board layout distortion on device rotation.
+- **Notification Permission Cleanup**: Switched to standard delay-based reminder notification schedule without triggering Android 12+ `SCHEDULE_EXACT_ALARM` dialog.
+- **Native Task Bar & Nav Bar Theming**: Styled `statusBarColor` and `navigationBarColor` to `#0E1F33` in `styles.xml` matching game background.
+- **Cross-Device Responsiveness**: Clamped layout width to `maxWidth: 480` with auto-centering on both mobile and tablet devices.
+
 ---
 
 ## [1.1.0] - 2026-10-11
