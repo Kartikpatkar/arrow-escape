@@ -59,4 +59,22 @@ describe('Daily Puzzle Challenge Service', () => {
     const res = dailyChallengeService.recordDailyCompletion('2026-10-04', 3, 16);
     expect(res.newStreak).toBe(1);
   });
+
+  it('correctly tracks and unlocks missed past daily levels via rewarded ad', () => {
+    const pastDate = '2026-10-01';
+
+    // Initially past date is locked if not solved
+    expect(dailyChallengeService.isDateUnlocked(pastDate)).toBe(false);
+
+    // Watch rewarded ad to unlock past level
+    dailyChallengeService.unlockPastDailyLevel(pastDate);
+
+    // Now unlocked
+    expect(dailyChallengeService.isDateUnlocked(pastDate)).toBe(true);
+    expect(dailyChallengeService.getState().unlockedPastDates).toContain(pastDate);
+
+    // Today is always freely unlocked without ad
+    const today = getLocalDateString();
+    expect(dailyChallengeService.isDateUnlocked(today)).toBe(true);
+  });
 });

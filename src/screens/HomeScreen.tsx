@@ -29,6 +29,7 @@ import { SettingsModal } from '../components/game/SettingsModal';
 import { StatisticsModal } from '../components/game/StatisticsModal';
 import { CosmeticsModal } from '../components/game/CosmeticsModal';
 import { GameModesModal, GameModeLaunchConfig } from '../components/game/GameModesModal';
+import { PastDailiesModal } from '../components/daily/PastDailiesModal';
 import { BannerAd } from '../components/ads/BannerAd';
 import { DailyChallengeCard } from '../components/daily/DailyChallengeCard';
 import { dailyChallengeService, getLocalDateString, DailyChallengeState } from '../services/daily/dailyChallengeService';
@@ -64,6 +65,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
   const [isStatisticsOpen, setIsStatisticsOpen] = useState(false);
   const [isCosmeticsOpen, setIsCosmeticsOpen] = useState(false);
   const [isGameModesOpen, setIsGameModesOpen] = useState(false);
+  const [isPastDailiesOpen, setIsPastDailiesOpen] = useState(false);
 
   const handleEquipCosmetic = useCallback(async (category: CosmeticCategory, key: string) => {
     const updated = await equipCosmetic(category, key);
@@ -257,6 +259,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
             audioService.playClick();
             onStartGame(9999, true, getLocalDateString());
           }}
+          onOpenCalendar={() => {
+            audioService.playClick();
+            setIsPastDailiesOpen(true);
+          }}
         />
 
         {/* Bento Tiles Grid */}
@@ -389,6 +395,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
         onLaunchMode={handleLaunchGameMode}
         onClose={() => {
           setIsGameModesOpen(false);
+          refreshProgress();
+        }}
+      />
+
+      {/* Past Daily Calendar Modal */}
+      <PastDailiesModal
+        visible={isPastDailiesOpen}
+        theme={theme}
+        onPlayDate={dateStr => onStartGame(9999, true, dateStr, 'DAILY')}
+        onClose={() => {
+          setIsPastDailiesOpen(false);
           refreshProgress();
         }}
       />

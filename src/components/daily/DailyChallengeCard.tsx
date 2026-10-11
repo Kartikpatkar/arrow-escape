@@ -16,10 +16,12 @@ import { notificationService } from '../../services/notifications/notificationSe
 
 interface DailyChallengeCardProps {
   onPlayDaily: () => void;
+  onOpenCalendar?: () => void;
 }
 
 export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
   onPlayDaily,
+  onOpenCalendar,
 }) => {
   const [dailyState, setDailyState] = useState<DailyChallengeState>(() =>
     dailyChallengeService.getState()
@@ -56,13 +58,25 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
           <Text style={styles.headerTitle}>DAILY CHALLENGE</Text>
         </View>
 
-        <View style={styles.streakBadge}>
-          <Text style={styles.fireIcon}>🔥</Text>
-          <Text style={styles.streakText}>
-            {dailyState.currentStreak > 0
-              ? `${dailyState.currentStreak} Day Streak`
-              : 'Streak Ready'}
-          </Text>
+        <View style={styles.topActionsRow}>
+          {onOpenCalendar && (
+            <TouchableOpacity
+              style={styles.calendarPillBtn}
+              onPress={onOpenCalendar}
+              activeOpacity={0.75}
+            >
+              <Text style={styles.calendarPillText}>📆 Past Days</Text>
+            </TouchableOpacity>
+          )}
+
+          <View style={styles.streakBadge}>
+            <Text style={styles.fireIcon}>🔥</Text>
+            <Text style={styles.streakText}>
+              {dailyState.currentStreak > 0
+                ? `${dailyState.currentStreak}D Streak`
+                : 'Ready'}
+            </Text>
+          </View>
         </View>
       </View>
 
@@ -89,15 +103,17 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
           )}
         </View>
 
-        <TouchableOpacity
-          style={[styles.actionButton, isCompleted && styles.actionButtonCompleted]}
-          onPress={onPlayDaily}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.actionButtonText}>
-            {isCompleted ? 'Replay' : 'PLAY'}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.actionCol}>
+          <TouchableOpacity
+            style={[styles.actionButton, isCompleted && styles.actionButtonCompleted]}
+            onPress={onPlayDaily}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.actionButtonText}>
+              {isCompleted ? 'Replay' : 'PLAY'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Footer: Milestone & Notification Trigger */}
@@ -143,6 +159,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  topActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  calendarPillBtn: {
+    backgroundColor: 'rgba(56, 189, 248, 0.18)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.45)',
+  },
+  calendarPillText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#38BDF8',
+  },
+  actionCol: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   calendarIcon: {
     fontSize: 16,

@@ -38,6 +38,7 @@ export interface DailyChallengeState {
   longestStreak: number;
   lastCompletedDate: string | null;
   records: Record<string, DailyRecord>; // dateStr -> record
+  unlockedPastDates: string[]; // dates unlocked by watching rewarded ads
   notificationsEnabled: boolean;
 }
 
@@ -122,6 +123,7 @@ class DailyChallengeService {
     longestStreak: 0,
     lastCompletedDate: null,
     records: {},
+    unlockedPastDates: [],
     notificationsEnabled: true,
   };
 
@@ -141,6 +143,7 @@ class DailyChallengeService {
           longestStreak: parsed.longestStreak || 0,
           lastCompletedDate: parsed.lastCompletedDate || null,
           records: parsed.records || {},
+          unlockedPastDates: parsed.unlockedPastDates || [],
           notificationsEnabled: parsed.notificationsEnabled ?? true,
         };
       }
@@ -164,6 +167,7 @@ class DailyChallengeService {
       longestStreak: 0,
       lastCompletedDate: null,
       records: {},
+      unlockedPastDates: [],
       notificationsEnabled: true,
     };
     try {
@@ -173,6 +177,23 @@ class DailyChallengeService {
       }
     } catch {
       // safe
+    }
+  }
+
+  public isDateUnlocked(dateStr: string): boolean {
+    const today = getLocalDateString();
+    // Today is always freely playable
+    if (dateStr === today) return true;
+    // Already solved
+    if (this.state.records[dateStr]?.completed) return true;
+    // Unlocked via ad
+    return this.state.unlockedPastDates.includes(dateStr);
+  }
+
+  public unlockPastDailyLevel(dateStr: string): void {
+    if (!this.state.unlockedPastDates.includes(dateStr)) {
+      this.state.unlockedPastDates = [...this.state.unlockedPastDates, dateStr];
+      this.saveState();
     }
   }
 

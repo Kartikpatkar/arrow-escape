@@ -115,10 +115,10 @@ describe('Cosmetics Catalog & Unlock Engine', () => {
 
     it('unlocks space theme with 7-day daily challenge streak', () => {
       const spaceTheme = BOARD_THEMES.find(t => t.key === 'space')!;
-      const dailyStateLow = { currentStreak: 3, longestStreak: 3, lastCompletedDate: null, records: {}, notificationsEnabled: false };
+      const dailyStateLow = { currentStreak: 3, longestStreak: 3, lastCompletedDate: null, records: {}, unlockedPastDates: [], notificationsEnabled: false };
       expect(isCosmeticUnlocked(spaceTheme, DEFAULT_PROGRESS, dailyStateLow)).toBe(false);
 
-      const dailyState7 = { currentStreak: 7, longestStreak: 7, lastCompletedDate: null, records: {}, notificationsEnabled: false };
+      const dailyState7 = { currentStreak: 7, longestStreak: 7, lastCompletedDate: null, records: {}, unlockedPastDates: [], notificationsEnabled: false };
       expect(isCosmeticUnlocked(spaceTheme, DEFAULT_PROGRESS, dailyState7)).toBe(true);
     });
 
