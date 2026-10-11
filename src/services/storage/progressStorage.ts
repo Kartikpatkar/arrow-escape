@@ -18,6 +18,9 @@ export interface UserProgressData {
   selectedEscapeEffect?: string;
   unlockedCosmetics?: string[];
   cosmeticsVipUnlocked?: boolean;
+  perfectClearBadges?: number[];
+  perfectClearsCount?: number;
+  quickEscapeWins?: number;
   soundEnabled: boolean;
   hapticsEnabled: boolean;
   adsRemoved: boolean;
@@ -37,6 +40,9 @@ export const DEFAULT_PROGRESS: UserProgressData = {
   selectedEscapeEffect: 'classic',
   unlockedCosmetics: ['theme:dawn', 'theme:paperLight', 'skin:classic', 'effect:classic'],
   cosmeticsVipUnlocked: false,
+  perfectClearBadges: [],
+  perfectClearsCount: 0,
+  quickEscapeWins: 0,
   soundEnabled: true,
   hapticsEnabled: true,
   adsRemoved: false,
@@ -213,6 +219,29 @@ export async function unlockCosmetic(itemId: string): Promise<UserProgressData> 
     });
   }
   return memoryCache;
+}
+
+/**
+ * Records a Perfect Clear badge for completing a puzzle within target move budget
+ */
+export async function recordPerfectClear(levelId: number): Promise<UserProgressData> {
+  const currentBadges = memoryCache.perfectClearBadges || [];
+  const nextBadges = currentBadges.includes(levelId) ? currentBadges : [...currentBadges, levelId];
+  const nextCount = (memoryCache.perfectClearsCount || 0) + (currentBadges.includes(levelId) ? 0 : 1);
+  return saveUserProgress({
+    perfectClearBadges: nextBadges,
+    perfectClearsCount: nextCount,
+  });
+}
+
+/**
+ * Increments completed Quick Escape counter
+ */
+export async function recordQuickEscapeWin(): Promise<UserProgressData> {
+  const nextWins = (memoryCache.quickEscapeWins || 0) + 1;
+  return saveUserProgress({
+    quickEscapeWins: nextWins,
+  });
 }
 
 /**

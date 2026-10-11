@@ -47,11 +47,20 @@ import { getTieredHint, HintTierLevel, TieredHintResult } from '../engine/hintEn
 import { BannerAd } from '../components/ads/BannerAd';
 import { dailyChallengeService, getLocalDateString } from '../services/daily/dailyChallengeService';
 import { CosmeticCategory } from '../services/cosmetics/cosmeticsCatalog';
+import {
+  ReplayGameMode,
+  QuickEscapeDifficulty,
+  generateQuickEscapePuzzle,
+  getPerfectClearMoveBudget,
+} from '../services/modes/gameModesService';
+import { recordPerfectClear, recordQuickEscapeWin } from '../services/storage/progressStorage';
 
 interface GameScreenProps {
   initialLevelId?: number;
   isDailyChallenge?: boolean;
   dailyDateStr?: string;
+  gameMode?: ReplayGameMode;
+  quickDifficulty?: QuickEscapeDifficulty;
   onNavigateHome?: () => void;
 }
 
@@ -59,9 +68,13 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   initialLevelId = 1,
   isDailyChallenge = false,
   dailyDateStr,
+  gameMode = 'CAMPAIGN',
+  quickDifficulty = 'NORMAL',
   onNavigateHome,
 }) => {
+  const effectiveMode: ReplayGameMode = isDailyChallenge ? 'DAILY' : gameMode;
   const [currentLevelId, setCurrentLevelId] = useState(initialLevelId);
+  const [quickEscapeRound, setQuickEscapeRound] = useState(0);
   const [unlockedLevel, setUnlockedLevel] = useState(1);
   const [levelStars, setLevelStars] = useState<Record<number, number>>({});
   const [hintsAvailable, setHintsAvailable] = useState(5);
@@ -128,11 +141,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   // Initialize Level Engine
   const currentLevelData = useMemo(() => {
-    if (isDailyChallenge) {
+    if (effectiveMode === 'DAILY') {
       return dailyChallengeService.getDailyPuzzle(dailyDateStr || getLocalDateString());
     }
+    if (effectiveMode === 'QUICK_ESCAPE') {
+      const generated = generateQuickEscapePuzzle(quickDifficulty, Date.now() + quickEscapeRound * 100);
+      return generated.level;
+    }
     return getLevelById(currentLevelId) || CORE_LEVELS[0];
-  }, [currentLevelId, isDailyChallenge, dailyDateStr]);
+  }, [currentLevelId, effectiveMode, dailyDateStr, quickDifficulty, quickEscapeRound]);
 
   const [gameState, setGameState] = useState<GameEngineState>(() =>
     initializeGameState(currentLevelData)
@@ -209,17 +226,21 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           hapticsService.vibrateSuccess();
 
           const stars = nextState.starsAwarded;
-          setLevelStars(prev => ({
-            ...prev,
-            [currentLevelId]: Math.max(prev[currentLevelId] || 0, stars),
-          }));
-          setUnlockedLevel(prev => Math.max(prev, currentLevelId + 1));
 
-          // Persist progress and trigger Google Play & AdMob sync
-          if (isDailyChallenge) {
+          // Mode-specific record persisting & badge awarding
+          if (effectiveMode === 'PRACTICE') {
+            // MODE C: Practice Mode does NOT alter original career records or unlock state
+            // Completely safe experimental sandbox
+          } else if (effectiveMode === 'DAILY') {
             const dateStr = dailyDateStr || getLocalDateString();
             dailyChallengeService.recordDailyCompletion(dateStr, stars, nextState.totalTaps);
-          } else {
+          } else if (effectiveMode === 'QUICK_ESCAPE') {
+            recordQuickEscapeWin();
+          } else if (effectiveMode === 'PERFECT_CLEAR') {
+            const moveBudget = getPerfectClearMoveBudget(currentLevelData);
+            if (nextState.totalTaps <= moveBudget) {
+              recordPerfectClear(currentLevelId);
+            }
             recordLevelCompletion(
               currentLevelId,
               stars,
@@ -227,18 +248,32 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               currentLevelData.arrows.length,
               25
             );
-          }
-          admobService.onLevelCompleted();
+          } else {
+            // Standard Campaign
+            setLevelStars(prev => ({
+              ...prev,
+              [currentLevelId]: Math.max(prev[currentLevelId] || 0, stars),
+            }));
+            setUnlockedLevel(prev => Math.max(prev, currentLevelId + 1));
+            recordLevelCompletion(
+              currentLevelId,
+              stars,
+              nextState.totalTaps,
+              currentLevelData.arrows.length,
+              25
+            );
+            admobService.onLevelCompleted();
 
-          const updatedSolvedCount = Math.max(currentLevelId, unlockedLevel);
-          const threeStarCount = Object.values(levelStars).filter(s => s === 3).length + (stars === 3 ? 1 : 0);
-          playGamesService.syncProgressWithLevelRecords(updatedSolvedCount, threeStarCount);
+            const updatedSolvedCount = Math.max(currentLevelId, unlockedLevel);
+            const threeStarCount = Object.values(levelStars).filter(s => s === 3).length + (stars === 3 ? 1 : 0);
+            playGamesService.syncProgressWithLevelRecords(updatedSolvedCount, threeStarCount);
 
-          // Check if final level 500 completed
-          if (currentLevelId >= TOTAL_LEVELS) {
-            setTimeout(() => {
-              setIsGrandCompletionOpen(true);
-            }, 600);
+            // Check if final level 500 completed
+            if (currentLevelId >= TOTAL_LEVELS) {
+              setTimeout(() => {
+                setIsGrandCompletionOpen(true);
+              }, 600);
+            }
           }
         }
       } else {
@@ -411,13 +446,31 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   }, [loadLevel]);
 
   const proceedToNextLevel = useCallback(() => {
+    if (effectiveMode === 'QUICK_ESCAPE') {
+      setQuickEscapeRound(r => r + 1);
+      setEscapingArrowIds([]);
+      setEscapingArrows([]);
+      setBlockedArrowId(null);
+      setBlockerFlashId(null);
+      setHintArrowId(null);
+      setActiveHint(null);
+      setIsVictoryGiftClaimed(false);
+      return;
+    }
+
+    if (effectiveMode === 'PRACTICE' || effectiveMode === 'PERFECT_CLEAR') {
+      const nextId = Math.min(TOTAL_LEVELS, currentLevelId + 1);
+      loadLevel(nextId);
+      return;
+    }
+
     const nextId = currentLevelId + 1;
     if (nextId <= TOTAL_LEVELS) {
       loadLevel(nextId);
     } else {
       setIsGrandCompletionOpen(true);
     }
-  }, [currentLevelId, loadLevel]);
+  }, [currentLevelId, effectiveMode, loadLevel]);
 
   // Handle Next Level
   const handleNextLevel = useCallback(() => {
@@ -474,7 +527,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         {/* Header with Home Button */}
         <GameHeader
           levelId={gameState.level.id}
-          levelTitle={gameState.level.title}
+          levelTitle={
+            effectiveMode === 'PRACTICE'
+              ? `🔬 Practice — ${gameState.level.title}`
+              : effectiveMode === 'PERFECT_CLEAR'
+              ? `🎯 Perfect Clear (Max ${getPerfectClearMoveBudget(currentLevelData)} Moves)`
+              : effectiveMode === 'QUICK_ESCAPE'
+              ? `⚡ Quick Escape #${quickEscapeRound + 1}`
+              : gameState.level.title
+          }
           totalArrows={gameState.level.arrows.length}
           totalTaps={gameState.totalTaps}
           theme={theme}
@@ -483,6 +544,49 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           onToggleTheme={handleToggleTheme}
           onOpenSettings={() => setIsSettingsOpen(true)}
         />
+
+        {/* Game Mode Banner */}
+        {effectiveMode !== 'CAMPAIGN' && effectiveMode !== 'DAILY' && (
+          <View
+            style={[
+              styles.tipBanner,
+              {
+                backgroundColor:
+                  effectiveMode === 'PRACTICE'
+                    ? 'rgba(16, 185, 129, 0.15)'
+                    : effectiveMode === 'PERFECT_CLEAR'
+                    ? 'rgba(236, 72, 153, 0.15)'
+                    : 'rgba(56, 189, 248, 0.15)',
+                borderColor:
+                  effectiveMode === 'PRACTICE'
+                    ? '#10B981'
+                    : effectiveMode === 'PERFECT_CLEAR'
+                    ? '#EC4899'
+                    : '#38BDF8',
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.tipText,
+                {
+                  color:
+                    effectiveMode === 'PRACTICE'
+                      ? '#10B981'
+                      : effectiveMode === 'PERFECT_CLEAR'
+                      ? '#EC4899'
+                      : '#38BDF8',
+                  fontWeight: '800',
+                },
+              ]}
+            >
+              {effectiveMode === 'PRACTICE' && '🔬 PRACTICE SANDBOX: Experiment freely. Career scores are not modified.'}
+              {effectiveMode === 'PERFECT_CLEAR' &&
+                `🎯 TARGET: Clear in ≤ ${getPerfectClearMoveBudget(currentLevelData)} moves! (${gameState.totalTaps}/${getPerfectClearMoveBudget(currentLevelData)} used)`}
+              {effectiveMode === 'QUICK_ESCAPE' && `⚡ QUICK ESCAPE (${quickDifficulty}): 100% solvable & fair endless session.`}
+            </Text>
+          </View>
+        )}
 
         {/* Mechanic Tip Banner */}
         {mechanicTip && (
@@ -628,12 +732,20 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         onDismiss={handleDismissInterstitial}
       />
 
-      {/* Standard Victory Celebration Overlay (Levels 1 to 499 & Daily) */}
-      {currentLevelId < TOTAL_LEVELS && (
+      {/* Standard Victory Celebration Overlay (Levels 1 to 499 & Daily & Game Modes) */}
+      {(currentLevelId < TOTAL_LEVELS || effectiveMode !== 'CAMPAIGN') && (
         <VictoryOverlay
           visible={gameState.isCompleted && !isGrandCompletionOpen}
-          levelId={isDailyChallenge ? 1 : gameState.level.id}
-          levelTitle={isDailyChallenge ? 'Daily Challenge' : gameState.level.title}
+          levelId={effectiveMode === 'DAILY' ? 1 : gameState.level.id}
+          levelTitle={
+            effectiveMode === 'PRACTICE'
+              ? `Practice Solved!`
+              : effectiveMode === 'PERFECT_CLEAR'
+              ? `Perfect Clear Solved!`
+              : effectiveMode === 'QUICK_ESCAPE'
+              ? `Quick Escape Cleared!`
+              : gameState.level.title
+          }
           starsAwarded={gameState.starsAwarded || 1}
           totalTaps={gameState.totalTaps}
           targetMoves={gameState.level.arrows.length}

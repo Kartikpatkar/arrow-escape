@@ -28,15 +28,23 @@ import { AchievementsModal } from '../components/game/AchievementsModal';
 import { SettingsModal } from '../components/game/SettingsModal';
 import { StatisticsModal } from '../components/game/StatisticsModal';
 import { CosmeticsModal } from '../components/game/CosmeticsModal';
+import { GameModesModal, GameModeLaunchConfig } from '../components/game/GameModesModal';
 import { BannerAd } from '../components/ads/BannerAd';
 import { DailyChallengeCard } from '../components/daily/DailyChallengeCard';
 import { dailyChallengeService, getLocalDateString, DailyChallengeState } from '../services/daily/dailyChallengeService';
 import { getPlayerStatsSummary, PlayerStatsSummary } from '../services/progression/progressionService';
 import { UserProgressData, DEFAULT_PROGRESS, equipCosmetic } from '../services/storage/progressStorage';
 import { CosmeticCategory } from '../services/cosmetics/cosmeticsCatalog';
+import { ReplayGameMode, QuickEscapeDifficulty } from '../services/modes/gameModesService';
 
 interface HomeScreenProps {
-  onStartGame: (levelId: number, isDaily?: boolean, dailyDate?: string) => void;
+  onStartGame: (
+    levelId: number,
+    isDaily?: boolean,
+    dailyDate?: string,
+    gameMode?: ReplayGameMode,
+    quickDifficulty?: QuickEscapeDifficulty
+  ) => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
@@ -56,6 +64,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isStatisticsOpen, setIsStatisticsOpen] = useState(false);
   const [isCosmeticsOpen, setIsCosmeticsOpen] = useState(false);
+  const [isGameModesOpen, setIsGameModesOpen] = useState(false);
 
   const handleEquipCosmetic = useCallback(async (category: CosmeticCategory, key: string) => {
     const updated = await equipCosmetic(category, key);
@@ -158,6 +167,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
     refreshProgress();
   }, [refreshProgress]);
 
+  const handleLaunchGameMode = useCallback(
+    (config: GameModeLaunchConfig) => {
+      if (config.mode === 'DAILY') {
+        onStartGame(9999, true, getLocalDateString(), 'DAILY');
+      } else if (config.mode === 'QUICK_ESCAPE') {
+        onStartGame(8001, false, undefined, 'QUICK_ESCAPE', config.quickDifficulty || 'NORMAL');
+      } else if (config.mode === 'PRACTICE') {
+        const lvl = config.practiceLevelId || unlockedLevel;
+        onStartGame(lvl, false, undefined, 'PRACTICE');
+      } else if (config.mode === 'PERFECT_CLEAR') {
+        const lvl = config.perfectClearLevelId || unlockedLevel;
+        onStartGame(lvl, false, undefined, 'PERFECT_CLEAR');
+      }
+    },
+    [onStartGame, unlockedLevel]
+  );
+
   return (
     <SafeAreaView style={[styles.rootContainer, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -234,6 +260,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
 
         {/* Bento Tiles Grid */}
         <View style={styles.bentoGrid}>
+          {/* Tile 0: Game Modes Hub */}
+          <TouchableOpacity
+            style={styles.bentoTile}
+            onPress={() => {
+              audioService.playClick();
+              setIsGameModesOpen(true);
+            }}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.tileIconCircle, { backgroundColor: 'rgba(56, 189, 248, 0.2)' }]}>
+              <Text style={styles.tileIcon}>🎮</Text>
+            </View>
+            <Text style={styles.tileTitle}>Game Modes</Text>
+            <Text style={styles.tileSubtitle}>Quick, Practice & Modes</Text>
+          </TouchableOpacity>
+
           {/* Tile 1: Level Packs */}
           <TouchableOpacity
             style={styles.bentoTile}
@@ -333,6 +375,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
       <BannerAd
         adsRemoved={adsRemoved}
         onRemoveAdsPress={() => setIsSettingsOpen(true)}
+      />
+
+      {/* Game Modes Hub Modal */}
+      <GameModesModal
+        visible={isGameModesOpen}
+        theme={theme}
+        unlockedLevel={unlockedLevel}
+        currentStreak={dailyState?.currentStreak || 0}
+        perfectClearsCount={progressData.perfectClearsCount || 0}
+        quickEscapeWins={progressData.quickEscapeWins || 0}
+        onLaunchMode={handleLaunchGameMode}
+        onClose={() => {
+          setIsGameModesOpen(false);
+          refreshProgress();
+        }}
       />
 
       {/* Level Select Modal */}
