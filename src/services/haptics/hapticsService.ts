@@ -1,7 +1,9 @@
 /**
  * Arrow Escape — Tactile Haptics Service
- * Provides physical haptic feedback on devices supporting Vibration API.
+ * Provides real hardware haptic feedback using @capacitor/haptics with Vibration API fallback.
  */
+
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 
 class HapticsService {
   private isEnabled: boolean = true;
@@ -20,12 +22,11 @@ class HapticsService {
   public vibrateLight(): void {
     if (!this.isEnabled) return;
     try {
-      const nav = typeof navigator !== 'undefined' ? (navigator as any) : null;
-      if (nav && typeof nav.vibrate === 'function') {
-        nav.vibrate(15);
-      }
-    } catch (e) {
-      // ignore
+      Haptics.impact({ style: ImpactStyle.Light }).catch(() => {
+        this.fallbackVibrate(15);
+      });
+    } catch {
+      this.fallbackVibrate(15);
     }
   }
 
@@ -35,12 +36,11 @@ class HapticsService {
   public vibrateWarning(): void {
     if (!this.isEnabled) return;
     try {
-      const nav = typeof navigator !== 'undefined' ? (navigator as any) : null;
-      if (nav && typeof nav.vibrate === 'function') {
-        nav.vibrate([25, 35, 25]);
-      }
-    } catch (e) {
-      // ignore
+      Haptics.notification({ type: NotificationType.Warning }).catch(() => {
+        this.fallbackVibrate([25, 35, 25]);
+      });
+    } catch {
+      this.fallbackVibrate([25, 35, 25]);
     }
   }
 
@@ -50,11 +50,21 @@ class HapticsService {
   public vibrateSuccess(): void {
     if (!this.isEnabled) return;
     try {
+      Haptics.notification({ type: NotificationType.Success }).catch(() => {
+        this.fallbackVibrate([30, 40, 30, 40, 60]);
+      });
+    } catch {
+      this.fallbackVibrate([30, 40, 30, 40, 60]);
+    }
+  }
+
+  private fallbackVibrate(pattern: number | number[]): void {
+    try {
       const nav = typeof navigator !== 'undefined' ? (navigator as any) : null;
       if (nav && typeof nav.vibrate === 'function') {
-        nav.vibrate([30, 40, 30, 40, 60]);
+        nav.vibrate(pattern);
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
   }

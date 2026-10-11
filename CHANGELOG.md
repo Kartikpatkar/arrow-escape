@@ -54,8 +54,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Verified career score protection against accidental downgrades during replays and simulated force-stops.
 
 #### Native & UI Polish
+- **Global Theme Application**: Lifted theme state to `App.tsx` and removed hardcoded CSS background gradients from `HomeScreen` and `GameScreen`, allowing selected themes (Candy Arcade, Midnight Dark, Cyber Neon, Deep Ocean, Sunset Glow, etc.) to transform the entire application immediately and persistently.
+- **Android Hardware Back Button Navigation (`src/services/navigation/backButtonHandler.ts`)**: Integrated `@capacitor/app` back button listener; closes active modals first, returns from gameplay to home, and requires a double back press within 2s on the home screen to exit with a floating toast notice.
+- **Branded Splash Screen (`src/components/common/SplashScreen.tsx`)**: Added animated startup splash with glowing logo and loading progress bar on launch.
+- **First-Time Permissions & Preferences Setup (`src/components/common/PermissionsSetupModal.tsx`)**: Introduced initial launch onboarding dialog allowing players to configure notification permissions, tactile haptics, and sound effects before playing.
+- **Hardware Haptics Engine (`src/services/haptics/hapticsService.ts`)**: Migrated to `@capacitor/haptics` native Android bridge for tactile vibration on valid moves, blockers, and victories with Web Vibration API fallback.
+- **Cinematic Arrow Flyout Speed Tuning (`src/components/game/ArrowTile.tsx`, `src/screens/GameScreen.tsx`)**: Increased arrow escape flight duration from 720ms to 1200ms with smooth cubic-bezier easing and synced 1250ms cleanup timeout so the full flight trajectory is comfortably visible to human eyes.
+- **Google Play Games Cloud Save (`src/services/playgames/playGamesService.ts`, `src/screens/HomeScreen.tsx`)**: Connected progress saving to Google Play Games Cloud Saved Games with an interactive "Sync Now" bar in the Home HUD.
 - **Settings Modal Render & Scroll Fix**: Fixed missing `ScrollView` import that caused the settings modal to render blank; wrapped modal card in vertical scroll container with `nestedScrollEnabled` on theme picker for smooth rendering across all screen sizes.
-- **Arrow Flyout Visibility & Speed Tuning**: Reduced arrow flight speed from 480ms to 720ms with delayed fadeout curve and synced 750ms cleanup timeout, ensuring escape trajectories are clearly readable to human eyes.
 - **Settings Visual Themes Pill UI**: Redesigned theme selector from compressed vertical pills into a horizontal, smoothly scrolling card row with full titles and dot indicators.
 - **Level Select Progress Overflow**: Fixed flex sizing and text clipping on World progress card header.
 - **Hardware Vibration Access**: Added `android.permission.VIBRATE` to `AndroidManifest.xml` enabling physical haptics on real devices.

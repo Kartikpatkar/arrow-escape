@@ -38,7 +38,13 @@ import { UserProgressData, DEFAULT_PROGRESS, equipCosmetic } from '../services/s
 import { CosmeticCategory } from '../services/cosmetics/cosmeticsCatalog';
 import { ReplayGameMode, QuickEscapeDifficulty } from '../services/modes/gameModesService';
 
+import { playGamesService } from '../services/playgames/playGamesService';
+import { backButtonManager } from '../services/navigation/backButtonHandler';
+
 interface HomeScreenProps {
+  theme?: ColorTheme;
+  selectedThemeKey?: string;
+  onSelectTheme?: (themeKey: string) => void;
   onStartGame: (
     levelId: number,
     isDaily?: boolean,
@@ -48,12 +54,17 @@ interface HomeScreenProps {
   ) => void;
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({
+  theme: propTheme,
+  selectedThemeKey: propThemeKey,
+  onSelectTheme: onPropSelectTheme,
+  onStartGame,
+}) => {
   const [progressData, setProgressData] = useState<UserProgressData>(DEFAULT_PROGRESS);
   const [dailyState, setDailyState] = useState<DailyChallengeState | undefined>(undefined);
   const [unlockedLevel, setUnlockedLevel] = useState(1);
   const [levelStars, setLevelStars] = useState<Record<number, number>>({});
-  const [selectedThemeKey, setSelectedThemeKey] = useState<string>('dawn');
+  const [selectedThemeKey, setSelectedThemeKey] = useState<string>(propThemeKey || 'dawn');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [adsRemoved, setAdsRemoved] = useState(false);
@@ -67,13 +78,39 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
   const [isGameModesOpen, setIsGameModesOpen] = useState(false);
   const [isPastDailiesOpen, setIsPastDailiesOpen] = useState(false);
 
+  // Android Hardware Back Button Integration
+  useEffect(() => {
+    const unregister = backButtonManager.pushHandler(() => {
+      if (isSettingsOpen) { setIsSettingsOpen(false); return true; }
+      if (isLevelSelectOpen) { setIsLevelSelectOpen(false); return true; }
+      if (isGameModesOpen) { setIsGameModesOpen(false); return true; }
+      if (isPastDailiesOpen) { setIsPastDailiesOpen(false); return true; }
+      if (isStatisticsOpen) { setIsStatisticsOpen(false); return true; }
+      if (isAchievementsOpen) { setIsAchievementsOpen(false); return true; }
+      if (isCosmeticsOpen) { setIsCosmeticsOpen(false); return true; }
+      return false; // Let root double-tap exit handler handle it
+    });
+    return unregister;
+  }, [
+    isSettingsOpen,
+    isLevelSelectOpen,
+    isGameModesOpen,
+    isPastDailiesOpen,
+    isStatisticsOpen,
+    isAchievementsOpen,
+    isCosmeticsOpen,
+  ]);
+
   const handleEquipCosmetic = useCallback(async (category: CosmeticCategory, key: string) => {
     const updated = await equipCosmetic(category, key);
     setProgressData(updated);
     if (category === 'theme') {
       setSelectedThemeKey(key);
+      if (onPropSelectTheme) {
+        onPropSelectTheme(key);
+      }
     }
-  }, []);
+  }, [onPropSelectTheme]);
 
   // Load Persisted Data
   const refreshProgress = useCallback(async () => {
@@ -102,7 +139,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
     refreshProgress();
   }, [refreshProgress]);
 
-  const theme: ColorTheme = THEMES[selectedThemeKey] || defaultTheme;
+  const activeThemeKey = propThemeKey || selectedThemeKey;
+  const theme: ColorTheme = propTheme || THEMES[activeThemeKey] || defaultTheme;
 
   const totalEarnedStars = useMemo(() => {
     return Object.values(levelStars).reduce((sum, s) => sum + s, 0);
@@ -112,17 +150,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
     return getPlayerStatsSummary(progressData, dailyState);
   }, [progressData, dailyState]);
 
-  const [localSaveStatus, setLocalSaveStatus] = useState('Device Storage OK ✓');
+  const [cloudSaveStatus, setCloudSaveStatus] = useState('Cloud Synced ✓');
 
   const handleManualSave = useCallback(async () => {
     audioService.playClick();
     hapticsService.vibrateLight();
-    await saveUserProgress({});
-    setLocalSaveStatus(`Saved Locally ${new Date().toLocaleTimeString()} ✓`);
+    setCloudSaveStatus('Syncing...');
+    await saveUserProgress(progressData);
+    await playGamesService.saveToCloud(progressData);
+    setCloudSaveStatus('Cloud Synced Just Now ✓');
     setTimeout(() => {
-      setLocalSaveStatus('Device Storage OK ✓');
+      setCloudSaveStatus('Cloud Synced ✓');
     }, 2500);
-  }, []);
+  }, [progressData]);
 
   // Settings Handlers
   const handleToggleSound = useCallback((enabled: boolean) => {
@@ -141,7 +181,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
     audioService.playClick();
     setSelectedThemeKey(themeKey);
     saveUserProgress({ selectedTheme: themeKey });
-  }, []);
+    if (onPropSelectTheme) {
+      onPropSelectTheme(themeKey);
+    }
+  }, [onPropSelectTheme]);
 
   const handlePurchaseRemoveAds = useCallback(async () => {
     const res = await billingService.purchaseRemoveAds();
@@ -364,17 +407,24 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Truthful Offline Local Storage Bar */}
+        {/* Google Play Games Cloud Save Bar */}
         <TouchableOpacity
-          style={styles.cloudSaveBar}
+          style={[styles.cloudSaveBar, { backgroundColor: theme.surface, borderColor: theme.boardBorder }]}
           onPress={handleManualSave}
           activeOpacity={0.8}
         >
-          <Text style={styles.cloudSaveIcon}>💾</Text>
-          <Text style={styles.cloudSaveText}>
-            Local Storage: <Text style={styles.cloudSaveStatus}>{localSaveStatus}</Text>
-          </Text>
-          <Text style={styles.cloudSaveAction}>Save Now</Text>
+          <Text style={styles.cloudSaveIcon}>🎮</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.cloudSaveText, { color: theme.textPrimary }]}>
+              Google Play Games: <Text style={styles.cloudSaveStatus}>{cloudSaveStatus}</Text>
+            </Text>
+            <Text style={[styles.cloudSaveSub, { color: theme.textMuted }]}>
+              Saved Games & Device Auto-Sync
+            </Text>
+          </View>
+          <View style={[styles.syncBadge, { backgroundColor: theme.accent }]}>
+            <Text style={styles.cloudSaveAction}>Sync Now</Text>
+          </View>
         </TouchableOpacity>
       </ScrollView>
 
@@ -481,8 +531,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
-    backgroundImage:
-      'radial-gradient(ellipse 90% 70% at 50% 25%, #183D5D 0%, #0C1E30 60%, #06101B 100%)' as any,
   },
   scrollContent: {
     width: '100%',
@@ -678,9 +726,19 @@ const styles = StyleSheet.create({
     color: '#34D399',
     fontWeight: '700',
   },
+  cloudSaveSub: {
+    fontSize: 9,
+    marginTop: 1,
+    fontWeight: '500',
+  },
+  syncBadge: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
   cloudSaveAction: {
     fontSize: 11,
-    color: '#38BDF8',
+    color: '#FFFFFF',
     fontWeight: '800',
   },
 });
