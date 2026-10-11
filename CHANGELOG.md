@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-10-11
+
+### 🚀 Major Feature Release: Special Arrow Mechanics, Progression Worlds, Daily Calendar, Endless Modes & Anti-Tampering
+
+#### Added
+- **Feature #1: Daily Puzzle Challenge & Streak System (`src/services/daily/dailyChallengeService.ts`, `src/components/daily/DailyChallengeCard.tsx`)**
+  - Offline-first deterministic date-seeded daily puzzle with 14–18 arrows on 6x6 grid.
+  - Consecutive calendar streak tracker with 5 progression tiers (1, 3, 7, 14, 30 days) and bonus XP rewards.
+  - Optional local reminder notification via `@capacitor/local-notifications`.
+- **Feature #2: Special Arrow Mechanics (`src/engine/types.ts`, `src/engine/gameState.ts`)**
+  - `LOCKED`: Arrows disabled until clear quota or chained dependencies are satisfied.
+  - `KEY`: Unlocks matching locked or chained arrows upon escaping.
+  - `ROTATING`: 90-degree clockwise pivot on blocked tap, allowing dynamic escape rerouting.
+  - `BOMB`: Explosive clearing of orthogonally neighboring arrows upon escape.
+- **Feature #3: Themed Worlds Progression & Visual Vault (`src/data/worlds/worldData.ts`, `src/services/progression/progressionService.ts`)**
+  - Divided 500 levels into 6 distinct themed worlds with tailored mechanic tags, milestone badges, and mastery ratings.
+  - Statistics Modal with player XP rank (Beginner to Grandmaster), completion KPIs, and activity analytics.
+- **Feature #4: 3-Tier Educational Hint System (`src/engine/hintEngine.ts`, `src/components/game/HintModal.tsx`)**
+  - Tier 1: Directional hint highlighting immediately escapable arrows.
+  - Tier 2: Blocker diagnostic showing blocked arrow + obstacle preventing escape.
+  - Tier 3: Solution path recommendation with solver validation.
+- **Feature #5: Cosmetics Wardrobe & Vault (`src/services/cosmetics/cosmeticsCatalog.ts`, `src/components/game/CosmeticsModal.tsx`)**
+  - Arrow Skins: Classic, Galaxy, Metallic, Crystal, Fire, Minimalist.
+  - Board Themes: Dawn, Paper Light, Midnight, Ocean, Forest, Space, Cyberpunk, Monochrome.
+  - Escape Particle FX: Classic Swoosh, Sparkle Burst, Neon Trail, Star Explosion, Crystal Shatter.
+  - Unlockable via world milestones, daily streaks, or optional VIP Cosmetics Pass ($2.99 IAP).
+- **Feature #6: Offline Replay Hub & Fairness Engine (`src/services/modes/gameModesService.ts`, `src/components/game/GameModesModal.tsx`)**
+  - Mode A: Daily Challenge.
+  - Mode B: Quick Escape endless sessions across Quick (4x5), Normal (5x5), and Expert (6x6) tiers.
+  - Mode C: Practice Sandbox replaying any unlocked level without altering career records.
+  - Mode D: Perfect Clear Challenge solving levels within exact solver-verified move budget for badges.
+  - Fairness Engine (`validatePuzzleFairness`): Verifies solvability, turn-0 escape availability, comfortable density (20–70%), and non-deadlock generation.
+- **Past Daily Calendar & Rewarded Ad Unlock (`src/components/daily/PastDailiesModal.tsx`)**
+  - 14-day history calendar allowing players to catch up on missed daily puzzles.
+  - Missed days unlockable by voluntarily watching a rewarded video ad.
+
+#### Security & Quality Assurance
+- **Anti-Tampering Storage Architecture (`src/services/storage/progressStorage.ts`)**
+  - Cryptographic salted HMAC checksum signature (`sig`) preventing manual modification of levels, hints, or progress.
+  - Automatic data sanitization clamping unlocked level (1..501), hints (0..9999), and star records.
+  - Removed query parameter level bypass (`?level=N`) and dev unlock backdoor (`?unlock=all`).
+- **Level Quality & Validation Pipeline (`src/services/validation/levelValidationPipeline.ts`)**
+  - Automated audit of all 500 levels validating 100% solvability, coordinate bounds, and zero duplicate coordinates.
+- **Save-Game Reliability Test Suite (`tests/services/saveGameReliability.test.ts`)**
+  - Verified career score protection against accidental downgrades during replays and simulated force-stops.
+
+---
+
 ## [1.1.0] - 2026-10-11
 
 ### 🌟 Home Screen, 500 Levels Expansion & Google Play Integration
