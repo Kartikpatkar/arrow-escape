@@ -21,6 +21,7 @@ interface BoardProps {
   theme: ColorTheme;
   skin?: string;
   escapeEffect?: string;
+  escapeDurationMs?: number;
   maxBoardDimension?: number;
   onArrowTap: (arrowId: string) => void;
 }
@@ -36,6 +37,7 @@ export const Board: React.FC<BoardProps> = ({
   theme,
   skin = 'classic',
   escapeEffect = 'classic',
+  escapeDurationMs = 650,
   maxBoardDimension = 360,
   onArrowTap,
 }) => {
@@ -157,6 +159,7 @@ export const Board: React.FC<BoardProps> = ({
                   theme={theme}
                   skin={skin}
                   escapeEffect={escapeEffect}
+                  escapeDurationMs={escapeDurationMs}
                   onTap={onArrowTap}
                 />
               );

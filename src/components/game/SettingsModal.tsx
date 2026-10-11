@@ -15,10 +15,12 @@ interface SettingsModalProps {
   selectedThemeKey: string;
   adsRemoved: boolean;
   theme: ColorTheme;
+  animationPacing?: 'dynamic' | 'fast' | 'cinematic';
   onOpenCosmetics?: () => void;
   onToggleSound: (enabled: boolean) => void;
   onToggleHaptics: (enabled: boolean) => void;
   onSelectTheme: (themeKey: string) => void;
+  onSelectAnimationPacing?: (mode: 'dynamic' | 'fast' | 'cinematic') => void;
   onPurchaseRemoveAds: () => void;
   onRestorePurchases: () => void;
   onResetProgress: () => void;
@@ -32,10 +34,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   selectedThemeKey,
   adsRemoved,
   theme,
+  animationPacing = 'dynamic',
   onOpenCosmetics,
   onToggleSound,
   onToggleHaptics,
   onSelectTheme,
+  onSelectAnimationPacing,
   onPurchaseRemoveAds,
   onRestorePurchases,
   onResetProgress,
@@ -157,6 +161,43 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               );
             })}
           </ScrollView>
+        </View>
+
+        {/* Animation & Pacing Setting */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>ANIMATION & PACING</Text>
+          <View style={styles.pacingRow}>
+            {(
+              [
+                { key: 'dynamic', title: '⚡ Dynamic (Combo Turbo)', sub: 'Fast rapid moves • Cinematic final' },
+                { key: 'fast', title: '⏩ Fast & Snappy', sub: '380ms all moves • High throughput' },
+                { key: 'cinematic', title: '🎬 Cinematic', sub: '900ms smooth • Full visual drama' },
+              ] as const
+            ).map(opt => {
+              const isSelected = animationPacing === opt.key;
+              return (
+                <TouchableOpacity
+                  key={opt.key}
+                  onPress={() => onSelectAnimationPacing?.(opt.key)}
+                  style={[
+                    styles.pacingCard,
+                    {
+                      backgroundColor: isSelected ? theme.accent : theme.surfaceElevated,
+                      borderColor: isSelected ? '#FDE047' : theme.boardBorder,
+                    },
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.pacingTitle, { color: isSelected ? '#0F172A' : theme.textPrimary }]}>
+                    {opt.title}
+                  </Text>
+                  <Text style={[styles.pacingSub, { color: isSelected ? '#1E293B' : theme.textMuted }]}>
+                    {opt.sub}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
 
         {/* Monetization / In-App Purchases */}
@@ -439,5 +480,21 @@ const styles = StyleSheet.create({
   credits: {
     fontSize: 11,
     fontWeight: '600',
+  },
+  pacingRow: {
+    gap: 8,
+  },
+  pacingCard: {
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1.5,
+  },
+  pacingTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  pacingSub: {
+    fontSize: 10,
+    marginTop: 2,
   },
 });

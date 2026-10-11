@@ -27,6 +27,7 @@ export interface UserProgressData {
   totalMovesMade: number;
   totalArrowsEscaped: number;
   totalPlayTimeSeconds: number;
+  animationPacing?: 'dynamic' | 'fast' | 'cinematic';
 }
 
 export const STORAGE_KEY = '@arrow_escape_user_progress_v1';
@@ -49,6 +50,7 @@ export const DEFAULT_PROGRESS: UserProgressData = {
   totalMovesMade: 0,
   totalArrowsEscaped: 0,
   totalPlayTimeSeconds: 0,
+  animationPacing: 'dynamic',
 };
 
 // In-memory backing store for tests / SSR / non-browser environments
@@ -381,6 +383,12 @@ export async function recordQuickEscapeWin(): Promise<UserProgressData> {
 /**
  * Resets all progress back to factory defaults
  */
+export async function updateAnimationPacing(
+  pacing: 'dynamic' | 'fast' | 'cinematic'
+): Promise<UserProgressData> {
+  return saveUserProgress({ animationPacing: pacing });
+}
+
 export async function resetAllProgress(): Promise<UserProgressData> {
   memoryCache = { ...DEFAULT_PROGRESS };
   memoryStore = {};
@@ -394,4 +402,5 @@ export async function resetAllProgress(): Promise<UserProgressData> {
   }
   return memoryCache;
 }
+
 
