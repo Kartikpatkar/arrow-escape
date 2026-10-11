@@ -337,7 +337,7 @@ export const ArrowTile: React.FC<ArrowTileProps> = ({
           ],
           opacity: flyOffset.opacity,
           transition: isEscaping
-            ? 'transform 480ms cubic-bezier(0.2, 0.75, 0.25, 1), opacity 450ms ease-out'
+            ? 'transform 1200ms cubic-bezier(0.25, 0.1, 0.25, 1), opacity 1150ms cubic-bezier(0.8, 0, 0.95, 0.1)'
             : 'transform 80ms ease',
         } as any,
       ]}

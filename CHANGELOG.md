@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.1] - 2026-10-11
+
+### 🛠️ UX, Navigation, Theme Engine & Native Polish
+
+#### Added & Improved
+- **Global Theme Engine (`src/App.tsx`, `src/theme/colors.ts`)**
+  - Lifted active theme state to root `App.tsx` and eliminated hardcoded CSS radial-gradient overlays from `HomeScreen` and `GameScreen`.
+  - Selected themes (Candy Arcade, Midnight Dark, Cyber Neon, Deep Ocean, Sunset Glow, Emerald Forest, Slate Minimal, Paper Pastel) immediately and persistently apply across the entire app (home screen, gameplay board, header, cards, and modals).
+- **Android Hardware Back Button Navigation (`src/services/navigation/backButtonHandler.ts`)**
+  - Integrated `@capacitor/app` native back button listener with priority-based handler stack.
+  - Contextual modal dismissal: Closes active modals (Settings, Level Select, Cosmetics, Hints, Game Modes) first.
+  - Gameplay back navigation: Safely returns from `GameScreen` to `HomeScreen`.
+  - Double-back exit safety: Pressing back on `HomeScreen` presents a `"Press back again to exit 🏹"` toast banner; double-tap within 2.0s triggers `CapApp.exitApp()`.
+- **Branded Animated Splash Screen (`src/components/common/SplashScreen.tsx`)**
+  - Smooth animated startup sequence featuring glowing arrow badge, app typography, and loading progress bar.
+- **First-Time Permissions & Preferences Onboarding (`src/components/common/PermissionsSetupModal.tsx`)**
+  - Welcomes new players on initial launch to configure Daily Challenge notification permissions, tactile vibration preferences, and sound effect toggles before entering gameplay.
+- **Hardware Haptic Feedback (`src/services/haptics/hapticsService.ts`)**
+  - Replaced browser vibration fallback with native `@capacitor/haptics` Android bridge (`Haptics.impact` and `Haptics.notification`).
+  - Added physical tactile bumps on valid moves, blocker collisions, and victory fanfare.
+- **Cinematic Arrow Flyout Speed Tuning (`src/components/game/ArrowTile.tsx`, `src/screens/GameScreen.tsx`)**
+  - Slowed escape trajectory duration from 480ms to 1200ms with smooth cubic-bezier easing (`cubic-bezier(0.25, 0.1, 0.25, 1)`) and delayed opacity fade.
+  - Synced DOM unmount timeout in `GameScreen.tsx` to 1250ms so arrows remain fully visible as they clear the board.
+- **Google Play Games Cloud Save Integration (`src/services/playgames/playGamesService.ts`, `src/screens/HomeScreen.tsx`)**
+  - Upgraded offline save bar to Google Play Games Cloud Saved Games bridge.
+  - Interactive "Sync Now" button writes local persistence and Google Play cloud snapshot with real-time sync status feedback.
+
+#### Fixed
+- **Settings Modal Blank Render**: Fixed missing `ScrollView` import in `SettingsModal.tsx`; added responsive vertical scroll container with `nestedScrollEnabled` on theme picker.
+- **Settings Visual Themes Pill UI**: Redesigned theme selector from compressed vertical pills into a horizontal, smoothly scrolling card row with full titles and dot indicators.
+- **Level Select Progress Overflow**: Fixed flex sizing and text clipping on World progress card header.
+- **Hardware Vibration Access**: Added `android.permission.VIBRATE` to `AndroidManifest.xml` enabling physical haptics on real devices.
+- **Portrait Orientation Lock**: Set `android:screenOrientation="portrait"` on MainActivity to prevent board layout distortion on device rotation.
+- **Notification Permission Cleanup**: Switched to standard delay-based reminder notification schedule without triggering Android 12+ `SCHEDULE_EXACT_ALARM` dialog.
+- **Native Task Bar & Nav Bar Theming**: Styled `statusBarColor` and `navigationBarColor` to `#0E1F33` in `styles.xml` matching game background.
+- **Cross-Device Responsiveness**: Clamped layout width to `maxWidth: 480` with auto-centering on both mobile and tablet devices.
+
+---
+
 ## [1.2.0] - 2026-10-11
 
 ### 🚀 Major Feature Release: Special Arrow Mechanics, Progression Worlds, Daily Calendar, Endless Modes & Anti-Tampering

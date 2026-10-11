@@ -55,12 +55,17 @@ import {
 } from '../services/modes/gameModesService';
 import { recordPerfectClear, recordQuickEscapeWin } from '../services/storage/progressStorage';
 
+import { backButtonManager } from '../services/navigation/backButtonHandler';
+
 interface GameScreenProps {
   initialLevelId?: number;
   isDailyChallenge?: boolean;
   dailyDateStr?: string;
   gameMode?: ReplayGameMode;
   quickDifficulty?: QuickEscapeDifficulty;
+  theme?: ColorTheme;
+  selectedThemeKey?: string;
+  onSelectTheme?: (themeKey: string) => void;
   onNavigateHome?: () => void;
 }
 
@@ -70,6 +75,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   dailyDateStr,
   gameMode = 'CAMPAIGN',
   quickDifficulty = 'NORMAL',
+  theme: propTheme,
+  selectedThemeKey: propThemeKey,
+  onSelectTheme: onPropSelectTheme,
   onNavigateHome,
 }) => {
   const effectiveMode: ReplayGameMode = isDailyChallenge ? 'DAILY' : gameMode;
@@ -129,15 +137,45 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     refreshProgress();
   }, [refreshProgress]);
 
+  // Hardware Back Button Integration in GameScreen
+  useEffect(() => {
+    const unregister = backButtonManager.pushHandler(() => {
+      if (isSettingsOpen) { setIsSettingsOpen(false); return true; }
+      if (isLevelSelectOpen) { setIsLevelSelectOpen(false); return true; }
+      if (isCosmeticsOpen) { setIsCosmeticsOpen(false); return true; }
+      if (isHintModalOpen) { setIsHintModalOpen(false); return true; }
+      if (isRewardedPromptOpen) { setIsRewardedPromptOpen(false); return true; }
+      if (onNavigateHome) {
+        onNavigateHome();
+        return true;
+      }
+      return false;
+    });
+    return unregister;
+  }, [
+    isSettingsOpen,
+    isLevelSelectOpen,
+    isCosmeticsOpen,
+    isHintModalOpen,
+    isRewardedPromptOpen,
+    onNavigateHome,
+  ]);
+
   const handleEquipCosmetic = useCallback(async (category: CosmeticCategory, key: string) => {
     const updated = await equipCosmetic(category, key);
     setProgressData(updated);
     if (category === 'skin') setSelectedSkin(key);
-    if (category === 'theme') setSelectedThemeKey(key);
+    if (category === 'theme') {
+      setSelectedThemeKey(key);
+      if (onPropSelectTheme) {
+        onPropSelectTheme(key);
+      }
+    }
     if (category === 'effect') setSelectedEscapeEffect(key);
-  }, []);
+  }, [onPropSelectTheme]);
 
-  const theme: ColorTheme = THEMES[selectedThemeKey] || defaultTheme;
+  const activeThemeKey = propThemeKey || selectedThemeKey;
+  const theme: ColorTheme = propTheme || THEMES[activeThemeKey] || defaultTheme;
 
   // Initialize Level Engine
   const currentLevelData = useMemo(() => {
@@ -214,11 +252,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         audioService.playEscapePop(nextState.escapedArrowIds.length);
         hapticsService.vibrateLight();
 
-        // Remove from animation track after smooth swoosh (480ms)
+        // Remove from animation track after smooth swoosh (1250ms)
         setTimeout(() => {
           setEscapingArrows(prev => prev.filter(a => a.id !== arrowId));
           setEscapingArrowIds(prev => prev.filter(id => id !== arrowId));
-        }, 480);
+        }, 1250);
 
         // Level Complete
         if (nextState.isCompleted) {
@@ -407,11 +445,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const handleToggleTheme = useCallback(() => {
     audioService.playClick();
     const keys = Object.keys(THEMES);
-    const nextIdx = (keys.indexOf(selectedThemeKey) + 1) % keys.length;
+    const nextIdx = (keys.indexOf(activeThemeKey) + 1) % keys.length;
     const nextThemeKey = keys[nextIdx];
     setSelectedThemeKey(nextThemeKey);
     saveUserProgress({ selectedTheme: nextThemeKey });
-  }, [selectedThemeKey]);
+    if (onPropSelectTheme) {
+      onPropSelectTheme(nextThemeKey);
+    }
+  }, [activeThemeKey, onPropSelectTheme]);
 
   // Handle Sound Toggle
   const handleToggleSound = useCallback((enabled: boolean) => {
@@ -432,7 +473,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     audioService.playClick();
     setSelectedThemeKey(themeKey);
     saveUserProgress({ selectedTheme: themeKey });
-  }, []);
+    if (onPropSelectTheme) {
+      onPropSelectTheme(themeKey);
+    }
+  }, [onPropSelectTheme]);
 
   // Handle Reset Progress
   const handleResetProgress = useCallback(async () => {
@@ -780,8 +824,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
-    backgroundImage:
-      'radial-gradient(ellipse 90% 70% at 50% 25%, #183D5D 0%, #0C1E30 60%, #06101B 100%)' as any,
   },
   contentWrapper: {
     flex: 1,

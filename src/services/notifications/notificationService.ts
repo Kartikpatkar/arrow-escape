@@ -106,22 +106,21 @@ class NotificationService {
         eveningTarget.setDate(eveningTarget.getDate() + 1);
       }
 
+      // Schedule future standard notifications without triggering Android 12+ SCHEDULE_EXACT_ALARM modal
       await LocalNotifications.schedule({
         notifications: [
           {
             id: NOTIFICATION_IDS.DAILY_MORNING,
             title: randomReminder.title,
             body: `${randomReminder.body} (${streakText})`,
-            schedule: { at: morningTarget, repeats: true },
-            sound: 'beep.wav',
+            schedule: { at: morningTarget, allowWhileIdle: false },
             smallIcon: 'ic_launcher_round',
           },
           {
             id: NOTIFICATION_IDS.DAILY_EVENING,
             title: '🏹 Evening Puzzle Break',
             body: `Unwind with today's Arrow Escape. ${streakText}`,
-            schedule: { at: eveningTarget, repeats: true },
-            sound: 'beep.wav',
+            schedule: { at: eveningTarget, allowWhileIdle: false },
             smallIcon: 'ic_launcher_round',
           },
         ],

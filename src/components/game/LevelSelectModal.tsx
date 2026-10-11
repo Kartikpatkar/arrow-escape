@@ -136,9 +136,9 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
           <View style={styles.worldHeroTop}>
             <View style={styles.worldHeroLeft}>
               <Text style={styles.worldHeroIcon}>{activeWorld.icon}</Text>
-              <View>
+              <View style={styles.worldInfoCol}>
                 <View style={styles.worldTagRow}>
-                  <Text style={[styles.worldHeroTitle, { color: theme.textPrimary }]}>
+                  <Text style={[styles.worldHeroTitle, { color: theme.textPrimary }]} numberOfLines={1}>
                     World {activeWorld.id}: {activeWorld.name}
                   </Text>
                   <View style={[styles.tagPill, { backgroundColor: activeWorld.accentColor + '22' }]}>
@@ -147,30 +147,32 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
                     </Text>
                   </View>
                 </View>
-                <Text style={[styles.worldHeroSub, { color: theme.textSecondary }]}>
+                <Text style={[styles.worldHeroSub, { color: theme.textSecondary }]} numberOfLines={2}>
                   {activeWorld.description} (Lv {activeWorld.startLevel}–{activeWorld.endLevel})
                 </Text>
               </View>
             </View>
 
-            {worldProgress.isMastered ? (
-              <View style={[styles.rewardBadge, { backgroundColor: '#10B98122', borderColor: '#10B981' }]}>
-                <Text style={styles.rewardBadgeText}>🌟 MASTERED</Text>
-              </View>
-            ) : worldProgress.isCompleted ? (
-              <View style={[styles.rewardBadge, { backgroundColor: activeWorld.accentColor + '22', borderColor: activeWorld.accentColor }]}>
-                <Text style={[styles.rewardBadgeText, { color: activeWorld.accentColor }]}>🏅 {activeWorld.badgeName}</Text>
-              </View>
-            ) : (
-              <View style={styles.starsGaugeCol}>
-                <Text style={[styles.starsGaugeVal, { color: '#F59E0B' }]}>
-                  ★ {worldProgress.starsEarned} <Text style={styles.starsGaugeMax}>/ {worldProgress.maxStars}</Text>
-                </Text>
-                <Text style={[styles.starsGaugeLabel, { color: theme.textSecondary }]}>
-                  {worldProgress.completedCount}/{worldProgress.totalLevels} Cleared
-                </Text>
-              </View>
-            )}
+            <View style={styles.worldHeroRight}>
+              {worldProgress.isMastered ? (
+                <View style={[styles.rewardBadge, { backgroundColor: '#10B98122', borderColor: '#10B981' }]}>
+                  <Text style={styles.rewardBadgeText}>🌟 MASTERED</Text>
+                </View>
+              ) : worldProgress.isCompleted ? (
+                <View style={[styles.rewardBadge, { backgroundColor: activeWorld.accentColor + '22', borderColor: activeWorld.accentColor }]}>
+                  <Text style={[styles.rewardBadgeText, { color: activeWorld.accentColor }]}>🏅 {activeWorld.badgeName}</Text>
+                </View>
+              ) : (
+                <View style={styles.starsGaugeCol}>
+                  <Text style={[styles.starsGaugeVal, { color: '#F59E0B' }]}>
+                    ★ {worldProgress.starsEarned} <Text style={styles.starsGaugeMax}>/ {worldProgress.maxStars}</Text>
+                  </Text>
+                  <Text style={[styles.starsGaugeLabel, { color: theme.textSecondary }]}>
+                    {worldProgress.completedCount}/{worldProgress.totalLevels} Cleared
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
 
           {/* World Progress Bar */}
@@ -355,12 +357,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
+    gap: 8,
   },
   worldHeroLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     flex: 1,
+    minWidth: 0,
+  },
+  worldInfoCol: {
+    flex: 1,
+    minWidth: 0,
+  },
+  worldHeroRight: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
   },
   worldHeroIcon: {
     fontSize: 26,

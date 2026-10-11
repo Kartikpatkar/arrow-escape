@@ -170,6 +170,13 @@ export async function loadUserProgress(): Promise<UserProgressData> {
 }
 
 /**
+ * Synchronous cached progress getter
+ */
+export function getUserProgress(): UserProgressData {
+  return { ...memoryCache };
+}
+
+/**
  * Persists updated progress with cryptographic integrity signature
  */
 export async function saveUserProgress(progress: Partial<UserProgressData>): Promise<UserProgressData> {
