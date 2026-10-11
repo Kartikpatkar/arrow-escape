@@ -56,7 +56,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [adsRemoved, setAdsRemoved] = useState(false);
-  const [syncStatusText, setSyncStatusText] = useState('All Synced ✓');
 
   // Modals
   const [isLevelSelectOpen, setIsLevelSelectOpen] = useState(false);
@@ -111,13 +110,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
     return getPlayerStatsSummary(progressData, dailyState);
   }, [progressData, dailyState]);
 
-  const handleManualSave = useCallback(() => {
+  const [localSaveStatus, setLocalSaveStatus] = useState('Device Storage OK ✓');
+
+  const handleManualSave = useCallback(async () => {
     audioService.playClick();
     hapticsService.vibrateLight();
-    saveUserProgress({});
-    setSyncStatusText(`Saved ${new Date().toLocaleTimeString()} ✓`);
+    await saveUserProgress({});
+    setLocalSaveStatus(`Saved Locally ${new Date().toLocaleTimeString()} ✓`);
     setTimeout(() => {
-      setSyncStatusText('All Synced ✓');
+      setLocalSaveStatus('Device Storage OK ✓');
     }, 2500);
   }, []);
 
@@ -357,15 +358,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Quick Cloud Save Bar */}
+        {/* Truthful Offline Local Storage Bar */}
         <TouchableOpacity
           style={styles.cloudSaveBar}
           onPress={handleManualSave}
           activeOpacity={0.8}
         >
-          <Text style={styles.cloudSaveIcon}>☁️</Text>
+          <Text style={styles.cloudSaveIcon}>💾</Text>
           <Text style={styles.cloudSaveText}>
-            Cloud Sync Status: <Text style={styles.cloudSaveStatus}>{syncStatusText}</Text>
+            Local Storage: <Text style={styles.cloudSaveStatus}>{localSaveStatus}</Text>
           </Text>
           <Text style={styles.cloudSaveAction}>Save Now</Text>
         </TouchableOpacity>
