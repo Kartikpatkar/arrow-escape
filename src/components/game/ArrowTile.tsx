@@ -5,7 +5,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import { ArrowConfig, Direction } from '../../engine/types';
 import { ColorTheme } from '../../theme/colors';
 
@@ -19,6 +19,8 @@ interface ArrowTileProps {
   isEscaping: boolean;
   isBlocked: boolean;
   theme: ColorTheme;
+  skin?: string;
+  escapeEffect?: string;
   onTap: (arrowId: string) => void;
 }
 
@@ -32,38 +34,210 @@ interface CandyArrowToken {
   dropShadowColor: string;
 }
 
-const CANDY_PALETTES: Record<Direction, CandyArrowToken> = {
-  UP: {
-    name: 'Sky Blue',
-    gradStart: '#60A5FA', // Azure / Sky Blue
-    gradEnd: '#1D4ED8',
-    extrusionColor: '#1E3A8A',
-    rimGlow: 'rgba(219, 234, 254, 0.85)',
-    dropShadowColor: 'rgba(29, 78, 216, 0.55)',
+const SKIN_PALETTES: Record<string, Record<Direction, CandyArrowToken>> = {
+  classic: {
+    UP: {
+      name: 'Sky Blue',
+      gradStart: '#60A5FA',
+      gradEnd: '#1D4ED8',
+      extrusionColor: '#1E3A8A',
+      rimGlow: 'rgba(219, 234, 254, 0.85)',
+      dropShadowColor: 'rgba(29, 78, 216, 0.55)',
+    },
+    RIGHT: {
+      name: 'Tangerine Orange',
+      gradStart: '#FDBA74',
+      gradEnd: '#EA580C',
+      extrusionColor: '#9A3412',
+      rimGlow: 'rgba(255, 237, 213, 0.85)',
+      dropShadowColor: 'rgba(234, 88, 12, 0.55)',
+    },
+    DOWN: {
+      name: 'Bubblegum Pink',
+      gradStart: '#F472B6',
+      gradEnd: '#DB2777',
+      extrusionColor: '#9D174D',
+      rimGlow: 'rgba(252, 231, 243, 0.85)',
+      dropShadowColor: 'rgba(219, 39, 119, 0.55)',
+    },
+    LEFT: {
+      name: 'Kiwi Lime Green',
+      gradStart: '#86EFAC',
+      gradEnd: '#16A34A',
+      extrusionColor: '#14532D',
+      rimGlow: 'rgba(220, 252, 231, 0.85)',
+      dropShadowColor: 'rgba(22, 163, 74, 0.55)',
+    },
   },
-  RIGHT: {
-    name: 'Tangerine Orange',
-    gradStart: '#FDBA74', // Juicy Orange
-    gradEnd: '#EA580C',
-    extrusionColor: '#9A3412',
-    rimGlow: 'rgba(255, 237, 213, 0.85)',
-    dropShadowColor: 'rgba(234, 88, 12, 0.55)',
+  metallic: {
+    UP: {
+      name: 'Platinum Silver',
+      gradStart: '#FFFFFF',
+      gradEnd: '#94A3B8',
+      extrusionColor: '#475569',
+      rimGlow: 'rgba(255, 255, 255, 0.95)',
+      dropShadowColor: 'rgba(100, 116, 139, 0.65)',
+    },
+    RIGHT: {
+      name: 'Polished Titanium',
+      gradStart: '#F1F5F9',
+      gradEnd: '#64748B',
+      extrusionColor: '#334155',
+      rimGlow: 'rgba(241, 245, 249, 0.95)',
+      dropShadowColor: 'rgba(71, 85, 105, 0.65)',
+    },
+    DOWN: {
+      name: 'Gunmetal Steel',
+      gradStart: '#E2E8F0',
+      gradEnd: '#475569',
+      extrusionColor: '#1E293B',
+      rimGlow: 'rgba(226, 232, 240, 0.95)',
+      dropShadowColor: 'rgba(51, 65, 85, 0.65)',
+    },
+    LEFT: {
+      name: 'Chrome Alloy',
+      gradStart: '#F8FAFC',
+      gradEnd: '#64748B',
+      extrusionColor: '#334155',
+      rimGlow: 'rgba(248, 250, 252, 0.95)',
+      dropShadowColor: 'rgba(71, 85, 105, 0.65)',
+    },
   },
-  DOWN: {
-    name: 'Bubblegum Pink',
-    gradStart: '#F472B6', // Vivid Pink
-    gradEnd: '#DB2777',
-    extrusionColor: '#9D174D',
-    rimGlow: 'rgba(252, 231, 243, 0.85)',
-    dropShadowColor: 'rgba(219, 39, 119, 0.55)',
+  crystal: {
+    UP: {
+      name: 'Aqua Quartz',
+      gradStart: '#A5F3FC',
+      gradEnd: '#06B6D4',
+      extrusionColor: '#0891B2',
+      rimGlow: 'rgba(207, 250, 254, 0.9)',
+      dropShadowColor: 'rgba(6, 182, 212, 0.6)',
+    },
+    RIGHT: {
+      name: 'Amethyst Gem',
+      gradStart: '#DDD6FE',
+      gradEnd: '#8B5CF6',
+      extrusionColor: '#6D28D9',
+      rimGlow: 'rgba(237, 233, 254, 0.9)',
+      dropShadowColor: 'rgba(139, 92, 246, 0.6)',
+    },
+    DOWN: {
+      name: 'Rose Sapphire',
+      gradStart: '#FBCFE8',
+      gradEnd: '#EC4899',
+      extrusionColor: '#BE185D',
+      rimGlow: 'rgba(251, 207, 232, 0.9)',
+      dropShadowColor: 'rgba(236, 72, 153, 0.6)',
+    },
+    LEFT: {
+      name: 'Emerald Beryl',
+      gradStart: '#A7F3D0',
+      gradEnd: '#10B981',
+      extrusionColor: '#047857',
+      rimGlow: 'rgba(167, 243, 208, 0.9)',
+      dropShadowColor: 'rgba(16, 185, 129, 0.6)',
+    },
   },
-  LEFT: {
-    name: 'Kiwi Lime Green',
-    gradStart: '#86EFAC', // Electric Green
-    gradEnd: '#16A34A',
-    extrusionColor: '#14532D',
-    rimGlow: 'rgba(220, 252, 231, 0.85)',
-    dropShadowColor: 'rgba(22, 163, 74, 0.55)',
+  fire: {
+    UP: {
+      name: 'Solar Yellow',
+      gradStart: '#FEF08A',
+      gradEnd: '#EAB308',
+      extrusionColor: '#A16207',
+      rimGlow: 'rgba(254, 240, 138, 0.9)',
+      dropShadowColor: 'rgba(234, 179, 8, 0.6)',
+    },
+    RIGHT: {
+      name: 'Magma Orange',
+      gradStart: '#FED7AA',
+      gradEnd: '#EA580C',
+      extrusionColor: '#9A3412',
+      rimGlow: 'rgba(254, 215, 170, 0.9)',
+      dropShadowColor: 'rgba(234, 88, 12, 0.6)',
+    },
+    DOWN: {
+      name: 'Blaze Crimson',
+      gradStart: '#FECACA',
+      gradEnd: '#DC2626',
+      extrusionColor: '#991B1B',
+      rimGlow: 'rgba(254, 202, 202, 0.9)',
+      dropShadowColor: 'rgba(220, 38, 38, 0.6)',
+    },
+    LEFT: {
+      name: 'Volcanic Amber',
+      gradStart: '#FDE68A',
+      gradEnd: '#D97706',
+      extrusionColor: '#92400E',
+      rimGlow: 'rgba(253, 230, 138, 0.9)',
+      dropShadowColor: 'rgba(217, 119, 6, 0.6)',
+    },
+  },
+  galaxy: {
+    UP: {
+      name: 'Nebula Violet',
+      gradStart: '#E9D5FF',
+      gradEnd: '#7E22CE',
+      extrusionColor: '#581C87',
+      rimGlow: 'rgba(233, 213, 255, 0.9)',
+      dropShadowColor: 'rgba(126, 34, 206, 0.6)',
+    },
+    RIGHT: {
+      name: 'Cosmic Magenta',
+      gradStart: '#FBCFE8',
+      gradEnd: '#BE185D',
+      extrusionColor: '#831843',
+      rimGlow: 'rgba(251, 207, 232, 0.9)',
+      dropShadowColor: 'rgba(190, 24, 93, 0.6)',
+    },
+    DOWN: {
+      name: 'Deep Cosmos',
+      gradStart: '#C7D2FE',
+      gradEnd: '#3730A3',
+      extrusionColor: '#1E1B4B',
+      rimGlow: 'rgba(199, 210, 254, 0.9)',
+      dropShadowColor: 'rgba(55, 48, 163, 0.6)',
+    },
+    LEFT: {
+      name: 'Aurora Teal',
+      gradStart: '#99F6E4',
+      gradEnd: '#0F766E',
+      extrusionColor: '#134E4A',
+      rimGlow: 'rgba(153, 246, 228, 0.9)',
+      dropShadowColor: 'rgba(15, 118, 110, 0.6)',
+    },
+  },
+  minimalist: {
+    UP: {
+      name: 'Slate Charcoal',
+      gradStart: '#E4E4E7',
+      gradEnd: '#71717A',
+      extrusionColor: '#3F3F46',
+      rimGlow: 'rgba(244, 244, 245, 0.8)',
+      dropShadowColor: 'rgba(39, 39, 42, 0.4)',
+    },
+    RIGHT: {
+      name: 'Iron Grey',
+      gradStart: '#D4D4D8',
+      gradEnd: '#52525B',
+      extrusionColor: '#27272A',
+      rimGlow: 'rgba(228, 228, 231, 0.8)',
+      dropShadowColor: 'rgba(39, 39, 42, 0.4)',
+    },
+    DOWN: {
+      name: 'Noir Jet',
+      gradStart: '#A1A1AA',
+      gradEnd: '#3F3F46',
+      extrusionColor: '#18181B',
+      rimGlow: 'rgba(212, 212, 216, 0.8)',
+      dropShadowColor: 'rgba(24, 24, 27, 0.4)',
+    },
+    LEFT: {
+      name: 'Pure Graphite',
+      gradStart: '#E4E4E7',
+      gradEnd: '#52525B',
+      extrusionColor: '#27272A',
+      rimGlow: 'rgba(244, 244, 245, 0.8)',
+      dropShadowColor: 'rgba(39, 39, 42, 0.4)',
+    },
   },
 };
 
@@ -76,7 +250,9 @@ export const ArrowTile: React.FC<ArrowTileProps> = ({
   isBlockerFlash,
   isEscaping,
   isBlocked,
-  theme: _theme,
+  theme,
+  skin = 'classic',
+  escapeEffect = 'classic',
   onTap,
 }) => {
   const [shakeOffset, setShakeOffset] = useState(0);
@@ -123,10 +299,27 @@ export const ArrowTile: React.FC<ArrowTileProps> = ({
 
   const left = padding + arrow.x * (cellSize + gap);
   const top = padding + arrow.y * (cellSize + gap);
-  const palette = CANDY_PALETTES[arrow.direction];
+  const skinKey = skin && SKIN_PALETTES[skin] ? skin : 'classic';
+  const palette = SKIN_PALETTES[skinKey][arrow.direction];
 
   // SVG arrow dimensions scaled proportionally
   const arrowSvgSize = Math.max(34, Math.round(cellSize * 0.76));
+
+  // Determine escape shadow filter
+  const getEscapeShadow = () => {
+    switch (escapeEffect) {
+      case 'sparkle':
+        return 'drop-shadow(0 0 20px #FBBF24) drop-shadow(0 0 10px #FFFFFF)';
+      case 'neonTrail':
+        return 'drop-shadow(0 0 24px #06B6D4) drop-shadow(0 0 12px #EC4899)';
+      case 'starExplosion':
+        return 'drop-shadow(0 0 22px #F43F5E) drop-shadow(0 0 12px #FACC15)';
+      case 'crystalShatter':
+        return 'drop-shadow(0 0 20px #A855F7) drop-shadow(0 0 10px #38BDF8)';
+      default:
+        return 'drop-shadow(0 0 16px #FDE047) drop-shadow(0 4px 8px rgba(0,0,0,0.3))';
+    }
+  };
 
   return (
     <View
@@ -154,15 +347,23 @@ export const ArrowTile: React.FC<ArrowTileProps> = ({
         onPress={() => onTap(arrow.id)}
         style={[
           styles.cushionPad,
+          theme.isLight && {
+            backgroundColor: theme.surfaceElevated || '#FFFFFF',
+            borderBottomColor: '#CBD5E1',
+            borderRightColor: '#94A3B8',
+            borderTopColor: '#FFFFFF',
+            borderLeftColor: '#F1F5F9',
+            shadowColor: 'rgba(0, 0, 0, 0.12)',
+          },
           isHinted && styles.hintedPad,
           isBlockerFlash && styles.blockedPad,
           isEscaping && styles.escapingPad,
         ]}
       >
-        {/* Soft Specular Reflection on Turquoise Cushion */}
+        {/* Soft Specular Reflection on Cushion */}
         <View style={styles.padGlossShine} />
 
-        {/* Rotated 3D Chunky Candy Arrow */}
+        {/* Rotated 3D Arrow Token */}
         <View
           style={[
             styles.arrowRotateWrapper,
@@ -180,7 +381,7 @@ export const ArrowTile: React.FC<ArrowTileProps> = ({
               display: 'block',
               overflow: 'visible',
               filter: isEscaping
-                ? 'drop-shadow(0 0 16px #FDE047) drop-shadow(0 4px 8px rgba(0,0,0,0.3))'
+                ? getEscapeShadow()
                 : `drop-shadow(0 4px 6px ${palette.dropShadowColor})`,
             }}
           >
@@ -272,6 +473,51 @@ export const ArrowTile: React.FC<ArrowTileProps> = ({
             <circle cx="50" cy="18" r="3.5" fill="#FFFFFF" opacity="0.9" />
           </svg>
         </View>
+
+        {/* Special Arrow Mechanics Badges */}
+        {arrow.isLocked && (
+          <View style={styles.badgeLocked}>
+            <Text style={styles.badgeText}>🔒</Text>
+          </View>
+        )}
+        {arrow.type === 'KEY' && (
+          <View style={styles.badgeKey}>
+            <Text style={styles.badgeText}>🔑</Text>
+          </View>
+        )}
+        {arrow.type === 'BOMB' && (
+          <View style={styles.badgeBomb}>
+            <Text style={styles.badgeText}>💣</Text>
+          </View>
+        )}
+        {arrow.type === 'ROTATING' && (
+          <View style={styles.badgeRotating}>
+            <Text style={styles.badgeText}>↻</Text>
+          </View>
+        )}
+
+        {/* Escape Effect Particle Trails & Visual Bursts */}
+        {isEscaping && escapeEffect === 'sparkle' && (
+          <View style={styles.escapeParticleOverlay} pointerEvents="none">
+            <Text style={styles.sparkleParticle1}>✨</Text>
+            <Text style={styles.sparkleParticle2}>✨</Text>
+          </View>
+        )}
+        {isEscaping && escapeEffect === 'starExplosion' && (
+          <View style={styles.escapeParticleOverlay} pointerEvents="none">
+            <Text style={styles.starParticle1}>⭐</Text>
+            <Text style={styles.starParticle2}>🌟</Text>
+          </View>
+        )}
+        {isEscaping && escapeEffect === 'crystalShatter' && (
+          <View style={styles.escapeParticleOverlay} pointerEvents="none">
+            <Text style={styles.crystalParticle1}>💎</Text>
+            <Text style={styles.crystalParticle2}>💠</Text>
+          </View>
+        )}
+        {isEscaping && escapeEffect === 'neonTrail' && (
+          <View style={styles.neonTrailStreak} pointerEvents="none" />
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -337,5 +583,143 @@ const styles = StyleSheet.create({
   escapingPad: {
     backgroundColor: '#FEF08A',
     borderColor: '#FBBF24',
+  },
+  badgeLocked: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: 'rgba(234, 179, 8, 0.95)',
+    borderRadius: 8,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    borderWidth: 1,
+    borderColor: '#FEF08A',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  badgeKey: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: 'rgba(59, 130, 246, 0.95)',
+    borderRadius: 8,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    borderWidth: 1,
+    borderColor: '#93C5FD',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  badgeBomb: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: 'rgba(239, 68, 68, 0.95)',
+    borderRadius: 8,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+  },
+  badgeRotating: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: 'rgba(168, 85, 247, 0.95)',
+    borderRadius: 8,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    borderWidth: 1,
+    borderColor: '#E9D5FF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  escapeParticleOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sparkleParticle1: {
+    position: 'absolute',
+    top: -6,
+    left: 4,
+    fontSize: 16,
+    textShadowColor: '#FDE047',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  },
+  sparkleParticle2: {
+    position: 'absolute',
+    bottom: -6,
+    right: 4,
+    fontSize: 14,
+    textShadowColor: '#FFFFFF',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  },
+  starParticle1: {
+    position: 'absolute',
+    top: -8,
+    right: 0,
+    fontSize: 18,
+    textShadowColor: '#F59E0B',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  },
+  starParticle2: {
+    position: 'absolute',
+    bottom: -8,
+    left: 0,
+    fontSize: 16,
+    textShadowColor: '#F43F5E',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  },
+  crystalParticle1: {
+    position: 'absolute',
+    top: -6,
+    left: 2,
+    fontSize: 15,
+    textShadowColor: '#A855F7',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  },
+  crystalParticle2: {
+    position: 'absolute',
+    bottom: -6,
+    right: 2,
+    fontSize: 15,
+    textShadowColor: '#38BDF8',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  },
+  neonTrailStreak: {
+    position: 'absolute',
+    width: '120%',
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#06B6D4',
+    shadowColor: '#EC4899',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 10,
   },
 });

@@ -3,7 +3,7 @@
  * Pure immutable state transitions.
  */
 
-import { ArrowConfig, GameEngineState, LevelData, MoveResult } from './types';
+import { ArrowConfig, Direction, GameEngineState, LevelData, MoveResult } from './types';
 import { evaluateMove } from './moveValidator';
 
 /**
@@ -24,18 +24,36 @@ export function calculateStars(totalArrows: number, totalTaps: number): 1 | 2 | 
   return 1;
 }
 
+const NEXT_CLOCKWISE_DIR: Record<Direction, Direction> = {
+  UP: 'RIGHT',
+  RIGHT: 'DOWN',
+  DOWN: 'LEFT',
+  LEFT: 'UP',
+};
+
 /**
  * Initializes fresh game engine state for a level.
  */
 export function initializeGameState(level: LevelData): GameEngineState {
+  const activeArrows = level.arrows.map(arrow => {
+    const isLocked =
+      arrow.isLocked ??
+      (arrow.type === 'LOCKED' ||
+        (arrow.lockRequirement !== undefined && arrow.lockRequirement > 0));
+    return {
+      ...arrow,
+      isLocked,
+    };
+  });
+
   return {
     level,
-    activeArrows: [...level.arrows],
+    activeArrows,
     escapedArrowIds: [],
     moveHistory: [],
     totalTaps: 0,
     invalidTaps: 0,
-    isCompleted: false,
+    isCompleted: activeArrows.length === 0,
     starsAwarded: 0,
   };
 }
@@ -63,6 +81,8 @@ export function processTap(
     return { nextState: state, moveResult };
   }
 
+  const targetArrow = state.activeArrows.find(a => a.id === arrowId);
+
   const moveResult = evaluateMove(
     arrowId,
     state.activeArrows,
@@ -72,22 +92,86 @@ export function processTap(
 
   const nextTotalTaps = state.totalTaps + 1;
 
-  if (moveResult.success) {
-    const nextEscaped = [...state.escapedArrowIds, arrowId];
+  if (moveResult.success && targetArrow) {
+    let nextEscaped = [...state.escapedArrowIds, arrowId];
+    let remaining = [...moveResult.remainingArrows];
+
+    // Special Mechanic: KEY ARROW unlocks bound target arrow
+    if (targetArrow.type === 'KEY' && targetArrow.keyTargetId) {
+      remaining = remaining.map(a =>
+        a.id === targetArrow.keyTargetId ? { ...a, isLocked: false } : a
+      );
+    }
+
+    // Special Mechanic: LOCKED ARROW condition check (counter-based)
+    remaining = remaining.map(a => {
+      if (
+        a.isLocked &&
+        a.lockRequirement !== undefined &&
+        a.lockRequirement <= nextEscaped.length
+      ) {
+        return { ...a, isLocked: false };
+      }
+      return a;
+    });
+
+    // Special Mechanic: BOMB ARROW detonates adjacent blocker arrows
+    if (targetArrow.type === 'BOMB') {
+      const radius = targetArrow.bombRadius || 1;
+      const detonatedIds: string[] = [];
+      const surviving: ArrowConfig[] = [];
+
+      remaining.forEach(a => {
+        if (
+          Math.abs(a.x - targetArrow.x) <= radius &&
+          Math.abs(a.y - targetArrow.y) <= radius
+        ) {
+          detonatedIds.push(a.id);
+        } else {
+          surviving.push(a);
+        }
+      });
+
+      remaining = surviving;
+      nextEscaped = [...nextEscaped, ...detonatedIds];
+    }
+
     const nextHistory = [...state.moveHistory, arrowId];
-    const isCompleted = moveResult.remainingArrows.length === 0;
+    const isCompleted = remaining.length === 0;
     const starsAwarded = isCompleted
       ? calculateStars(state.level.arrows.length, nextTotalTaps)
       : 0;
 
     const nextState: GameEngineState = {
       ...state,
-      activeArrows: moveResult.remainingArrows,
+      activeArrows: remaining,
       escapedArrowIds: nextEscaped,
       moveHistory: nextHistory,
       totalTaps: nextTotalTaps,
       isCompleted,
       starsAwarded,
+    };
+
+    return { nextState, moveResult };
+  }
+
+  // If ROTATING arrow is tapped while blocked: rotate 90 degrees clockwise!
+  if (targetArrow && targetArrow.type === 'ROTATING') {
+    const nextDir = NEXT_CLOCKWISE_DIR[targetArrow.direction];
+    const rotatedArrows = state.activeArrows.map(a =>
+      a.id === arrowId
+        ? {
+            ...a,
+            direction: nextDir,
+            rotationSteps: (a.rotationSteps || 0) + 1,
+          }
+        : a
+    );
+
+    const nextState: GameEngineState = {
+      ...state,
+      activeArrows: rotatedArrows,
+      totalTaps: nextTotalTaps,
     };
 
     return { nextState, moveResult };

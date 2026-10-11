@@ -30,9 +30,91 @@ function createMulberry32(seed: number) {
 }
 
 /**
+ * Milestone Tutorial Levels for Special Arrow Mechanics.
+ */
+function getMilestoneTutorialLevel(levelId: number): LevelData | null {
+  if (levelId === 31) {
+    return {
+      id: 31,
+      packId: 'procedural-exp',
+      title: 'Tutorial: Locked Arrow',
+      width: 4,
+      height: 4,
+      arrows: [
+        { id: 'arrow_1', x: 0, y: 0, direction: 'UP', type: 'NORMAL' },
+        { id: 'arrow_2', x: 1, y: 0, direction: 'UP', type: 'NORMAL' },
+        { id: 'arrow_3', x: 2, y: 0, direction: 'UP', type: 'LOCKED', isLocked: true, lockRequirement: 2 },
+        { id: 'arrow_4', x: 3, y: 0, direction: 'UP', type: 'NORMAL' },
+      ],
+      targetMoves: 4,
+    };
+  }
+
+  if (levelId === 61) {
+    return {
+      id: 61,
+      packId: 'procedural-exp',
+      title: 'Tutorial: Key & Lock',
+      width: 4,
+      height: 4,
+      arrows: [
+        { id: 'arrow_key', x: 0, y: 0, direction: 'UP', type: 'KEY', keyTargetId: 'arrow_locked' },
+        { id: 'arrow_locked', x: 2, y: 0, direction: 'UP', type: 'LOCKED', isLocked: true },
+        { id: 'arrow_3', x: 1, y: 0, direction: 'UP', type: 'NORMAL' },
+        { id: 'arrow_4', x: 3, y: 0, direction: 'UP', type: 'NORMAL' },
+      ],
+      targetMoves: 4,
+    };
+  }
+
+  if (levelId === 101) {
+    return {
+      id: 101,
+      packId: 'procedural-exp',
+      title: 'Tutorial: Rotating Arrow',
+      width: 4,
+      height: 4,
+      arrows: [
+        // Starts pointing RIGHT towards blocker at (1,1); rotates DOWN to exit freely!
+        { id: 'arrow_rot', x: 0, y: 1, direction: 'RIGHT', type: 'ROTATING' },
+        { id: 'arrow_blocker', x: 1, y: 1, direction: 'DOWN', type: 'NORMAL' },
+        { id: 'arrow_top', x: 0, y: 0, direction: 'UP', type: 'NORMAL' },
+        { id: 'arrow_right', x: 3, y: 1, direction: 'RIGHT', type: 'NORMAL' },
+      ],
+      targetMoves: 4,
+    };
+  }
+
+  if (levelId === 161) {
+    return {
+      id: 161,
+      packId: 'procedural-exp',
+      title: 'Tutorial: Bomb Arrow',
+      width: 5,
+      height: 5,
+      arrows: [
+        // Bomb at (2,0) pointing UP (clear). Detonates adjacent blocker at (2,1)
+        { id: 'arrow_bomb', x: 2, y: 0, direction: 'UP', type: 'BOMB', bombRadius: 1 },
+        { id: 'arrow_blocker', x: 2, y: 1, direction: 'UP', type: 'NORMAL' },
+        { id: 'arrow_left', x: 0, y: 2, direction: 'LEFT', type: 'NORMAL' },
+        { id: 'arrow_right', x: 4, y: 2, direction: 'RIGHT', type: 'NORMAL' },
+      ],
+      targetMoves: 3,
+    };
+  }
+
+  return null;
+}
+
+/**
  * Generates level configuration for level IDs 31 to 500.
  */
 export function generateLevel(levelId: number): LevelData {
+  const tutorial = getMilestoneTutorialLevel(levelId);
+  if (tutorial) {
+    return tutorial;
+  }
+
   const rng = createMulberry32(levelId * 2654435761 + 1337);
 
   // Progressive grid dimension and arrow density
@@ -58,31 +140,46 @@ export function generateLevel(levelId: number): LevelData {
     arrowCount = 24 + Math.floor((levelId - 300) * 0.04); // 24-32 arrows
   }
 
-  // Attempt reverse-construction placement
+  // Attempt reverse-construction placement with progressive mechanics
   let arrows: ArrowConfig[] = [];
   let attempts = 0;
 
   while (attempts < 10) {
     attempts++;
-    arrows = generateCandidateArrows(width, height, arrowCount, rng);
+    const baseArrows = generateCandidateArrows(width, height, arrowCount, rng);
     
+    // Inject special mechanics based on level progression
+    const enhancedArrows = injectSpecialMechanics(baseArrows, levelId, rng);
+
     const candidate: LevelData = {
       id: levelId,
       packId: 'procedural-exp',
       title: getProceduralTitle(levelId),
       width,
       height,
-      arrows,
-      targetMoves: arrows.length,
+      arrows: enhancedArrows,
+      targetMoves: enhancedArrows.length,
     };
 
     const report = solveLevel(candidate, 1);
     if (report.isSolvable) {
-      return candidate;
+      return {
+        ...candidate,
+        targetMoves: report.minMoves,
+      };
+    }
+
+    // If enhanced candidate wasn't solvable, verify baseArrows
+    const fallbackCandidate: LevelData = {
+      ...candidate,
+      arrows: baseArrows,
+    };
+    const fallbackReport = solveLevel(fallbackCandidate, 1);
+    if (fallbackReport.isSolvable) {
+      return fallbackCandidate;
     }
   }
 
-  // Fallback fallback guaranteed solvable fallback
   return {
     id: levelId,
     packId: 'procedural-exp',
@@ -92,6 +189,143 @@ export function generateLevel(levelId: number): LevelData {
     arrows,
     targetMoves: arrows.length,
   };
+}
+
+/**
+ * Injects progressive special arrow mechanics based on level tiers.
+ */
+function injectSpecialMechanics(
+  baseArrows: ArrowConfig[],
+  levelId: number,
+  rng: () => number
+): ArrowConfig[] {
+  if (baseArrows.length < 4) return baseArrows;
+  const arrows = baseArrows.map(a => ({ ...a }));
+  const N = arrows.length;
+
+  const NEXT_ROT: Record<Direction, Direction> = {
+    UP: 'RIGHT',
+    RIGHT: 'DOWN',
+    DOWN: 'LEFT',
+    LEFT: 'UP',
+  };
+
+  // Tier 1: Levels 32-60 -> Locked Arrows (Counter-based)
+  if (levelId >= 32 && levelId <= 60) {
+    // Arrow placed first (index 0) escapes last in solution sequence
+    arrows[0] = {
+      ...arrows[0],
+      type: 'LOCKED',
+      isLocked: true,
+      lockRequirement: Math.max(2, Math.floor(N * 0.4)),
+    };
+    return arrows;
+  }
+
+  // Tier 2: Levels 62-100 -> Key & Locked Arrow Pairs
+  if (levelId >= 62 && levelId <= 100) {
+    // Key arrow placed near end (escapes early), target placed at 0 (escapes late)
+    const keyIdx = Math.min(N - 1, N - 2);
+    const targetIdx = 0;
+    arrows[keyIdx] = {
+      ...arrows[keyIdx],
+      type: 'KEY',
+      keyTargetId: arrows[targetIdx].id,
+    };
+    arrows[targetIdx] = {
+      ...arrows[targetIdx],
+      type: 'LOCKED',
+      isLocked: true,
+    };
+    return arrows;
+  }
+
+  // Tier 3: Levels 102-160 -> Rotating Arrows + Locked
+  if (levelId >= 102 && levelId <= 160) {
+    const rotIdx = Math.floor(N * 0.5);
+    // Change initial direction 90 deg so it needs to rotate
+    arrows[rotIdx] = {
+      ...arrows[rotIdx],
+      type: 'ROTATING',
+      direction: NEXT_ROT[arrows[rotIdx].direction],
+    };
+    // Also include a locked arrow
+    arrows[0] = {
+      ...arrows[0],
+      type: 'LOCKED',
+      isLocked: true,
+      lockRequirement: Math.max(2, Math.floor(N * 0.3)),
+    };
+    return arrows;
+  }
+
+  // Tier 4: Levels 162-220 -> Bomb Arrows + Keys
+  if (levelId >= 162 && levelId <= 220) {
+    const bombIdx = Math.floor(N * 0.7);
+    arrows[bombIdx] = {
+      ...arrows[bombIdx],
+      type: 'BOMB',
+      bombRadius: 1,
+    };
+    return arrows;
+  }
+
+  // Tier 5: Levels 221-500 -> Grand Master Hybrids
+  if (levelId > 220) {
+    const variant = levelId % 3;
+    if (variant === 0) {
+      // Rotating + Key
+      const keyIdx = N - 1;
+      const targetIdx = 0;
+      arrows[keyIdx] = {
+        ...arrows[keyIdx],
+        type: 'KEY',
+        keyTargetId: arrows[targetIdx].id,
+      };
+      arrows[targetIdx] = {
+        ...arrows[targetIdx],
+        type: 'LOCKED',
+        isLocked: true,
+      };
+      const rotIdx = Math.floor(N * 0.4);
+      arrows[rotIdx] = {
+        ...arrows[rotIdx],
+        type: 'ROTATING',
+        direction: NEXT_ROT[arrows[rotIdx].direction],
+      };
+    } else if (variant === 1) {
+      // Bomb + Locked
+      const bombIdx = Math.floor(N * 0.8);
+      arrows[bombIdx] = {
+        ...arrows[bombIdx],
+        type: 'BOMB',
+        bombRadius: 1,
+      };
+      arrows[0] = {
+        ...arrows[0],
+        type: 'LOCKED',
+        isLocked: true,
+        lockRequirement: Math.max(2, Math.floor(N * 0.5)),
+      };
+    } else {
+      // Rotating + Bomb
+      const rotIdx = Math.floor(N * 0.5);
+      arrows[rotIdx] = {
+        ...arrows[rotIdx],
+        type: 'ROTATING',
+        direction: NEXT_ROT[arrows[rotIdx].direction],
+      };
+      const bombIdx = Math.floor(N * 0.8);
+      arrows[bombIdx] = {
+        ...arrows[bombIdx],
+        type: 'BOMB',
+        bombRadius: 1,
+      };
+    }
+    return arrows;
+  }
+
+  return arrows;
 }
 
 /**

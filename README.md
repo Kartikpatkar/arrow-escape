@@ -2,7 +2,7 @@
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg?logo=typescript)](https://www.typescriptlang.org/)
 [![React Native Web](https://img.shields.io/badge/React%20Native%20Web-0.21-61DAFB.svg?logo=react)](https://necolas.github.io/react-native-web/)
-[![Jest Tests](https://img.shields.io/badge/Tests-49%20Passed-brightgreen.svg?logo=jest)](https://jestjs.io/)
+[![Jest Tests](https://img.shields.io/badge/Tests-105%20Passed-brightgreen.svg?logo=jest)](https://jestjs.io/)
 [![Solvable Levels](https://img.shields.io/badge/Solvable%20Levels-500%2F500-success.svg)]()
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Web-orange.svg)]()
 
@@ -14,12 +14,21 @@
 
 - **The Objective:** Clear all arrows from the board in the fewest moves possible.
 - **The Core Rule:** An arrow can only escape if its forward path to the edge of the board is completely unobstructed by any other arrow.
+- **Special Arrow Mechanics:**
+  - 🔒 **Locked Arrows:** Quota or chained dependencies must be cleared first.
+  - 🔑 **Key Arrows:** Escapes and unchains target locked arrows.
+  - ↻ **Rotating Arrows:** Tap while blocked to pivot 90° clockwise.
+  - 💣 **Bomb Arrows:** Explodes orthogonally neighboring obstacles upon escaping.
+- **Game Modes Hub:**
+  - 📅 **Daily Challenge & Calendar:** Date-seeded puzzles with streaks; unlock past days via rewarded video ads.
+  - ⚡ **Quick Escape:** Endless 2–5 min sessions (Quick 4x5, Normal 5x5, Expert 6x6).
+  - 🔬 **Practice Sandbox:** Safe experimentation without altering career scores.
+  - 🎯 **Perfect Clear:** Beat solver's exact move budget to earn badges.
 - **Move Dynamics:**
-  - **Valid Move:** The arrow launches off-screen with satisfying acceleration and an ascending pentatonic pop. Paths open up for blocked arrows behind it.
-  - **Invalid Move:** The arrow jiggles with a gentle thud and briefly flashes its blocker. No penalizing timers or life gates.
-- **Star Scoring:** Clear the board matching or beating target moves to earn 3 stars per level.
-- **500 Unique Levels:** 30 handcrafted core levels plus 470 mathematically verified procedural levels with Grand 500 finale.
-- **Tactile 3D Aesthetic:** Molded candy arrow tokens resting on pastel turquoise cushion pads within an iridescent rainbow puzzle tray.
+  - **Valid Move:** Arrow launches off-screen with tactile acceleration and ascending pentatonic pop.
+  - **Invalid Move:** Arrow jiggles with gentle thud and blocker flash.
+- **Star Scoring & Progression:** 500 levels across 6 themed worlds with XP ranks from Beginner to Grandmaster.
+- **Visual Vault:** 6 arrow skins, 8 board themes, and 5 particle escape FX.
 
 ---
 

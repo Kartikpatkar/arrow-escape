@@ -1,4 +1,4 @@
-import { getHint, getValidMoves } from '../../src/engine/hintEngine';
+import { getHint, getValidMoves, getTieredHint, getBlockerHint, getSolutionHint } from '../../src/engine/hintEngine';
 import { ArrowConfig, LevelData } from '../../src/engine/types';
 
 describe('Hint Engine', () => {
@@ -37,7 +37,36 @@ describe('Hint Engine', () => {
     expect(hint.unblocksCount).toBe(1);
   });
 
-  it('returns hasHint: false when no unblocked arrows remain', () => {
+  it('Level 1 — Directional Hint returns clear escape candidate', () => {
+    const dirHint = getTieredHint('DIRECTIONAL', level.arrows, level);
+    expect(dirHint.hasHint).toBe(true);
+    expect(dirHint.tier).toBe('DIRECTIONAL');
+    expect(dirHint.targetArrowId).toBe('a1');
+    expect(dirHint.blockerArrowId).toBeNull();
+    expect(dirHint.explanation).toContain('Arrow (UP)');
+  });
+
+  it('Level 2 — Blocker Hint returns blocked arrow and its obstacle', () => {
+    const blockerHint = getTieredHint('BLOCKER', level.arrows, level);
+    expect(blockerHint.hasHint).toBe(true);
+    expect(blockerHint.tier).toBe('BLOCKER');
+    // a2 is blocked by a1
+    expect(blockerHint.targetArrowId).toBe('a2');
+    expect(blockerHint.blockerArrowId).toBe('a1');
+    expect(blockerHint.explanation).toContain('is blocked by Arrow');
+  });
+
+  it('Level 3 — Solution Hint returns verified move from backtracking solver', () => {
+    const solHint = getTieredHint('SOLUTION', level.arrows, level);
+    expect(solHint.hasHint).toBe(true);
+    expect(solHint.tier).toBe('SOLUTION');
+    expect(solHint.targetArrowId).toBeDefined();
+    // In this puzzle, a1 must escape first to solve a2 and a3
+    expect(solHint.targetArrowId).toBe('a1');
+    expect(solHint.explanation).toContain('optimal solution sequence');
+  });
+
+  it('returns hasHint: false when no unblocked arrows remain in blocked cycle', () => {
     const blockedCycle: ArrowConfig[] = [
       { id: 'c1', x: 1, y: 1, direction: 'RIGHT' },
       { id: 'c2', x: 2, y: 1, direction: 'DOWN' },

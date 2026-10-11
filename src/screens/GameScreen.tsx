@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { StyleSheet, View, SafeAreaView } from 'react-native';
+import { StyleSheet, View, Text, SafeAreaView } from 'react-native';
 import {
   GameEngineState,
   initializeGameState,
@@ -23,6 +23,9 @@ import {
   updateHintsAvailable,
   saveUserProgress,
   resetAllProgress,
+  equipCosmetic,
+  UserProgressData,
+  DEFAULT_PROGRESS,
 } from '../services/storage/progressStorage';
 import { audioService } from '../services/audio/audioService';
 import { hapticsService } from '../services/haptics/hapticsService';
@@ -35,21 +38,43 @@ import { GameControls } from '../components/game/GameControls';
 import { VictoryOverlay } from '../components/game/VictoryOverlay';
 import { LevelSelectModal } from '../components/game/LevelSelectModal';
 import { SettingsModal } from '../components/game/SettingsModal';
+import { CosmeticsModal } from '../components/game/CosmeticsModal';
 import { RewardedAdPromptModal } from '../components/game/RewardedAdPromptModal';
 import { AdInterstitialModal } from '../components/game/AdInterstitialModal';
 import { GrandCompletionModal } from '../components/game/GrandCompletionModal';
+import { HintModal } from '../components/game/HintModal';
+import { getTieredHint, HintTierLevel, TieredHintResult } from '../engine/hintEngine';
 import { BannerAd } from '../components/ads/BannerAd';
+import { dailyChallengeService, getLocalDateString } from '../services/daily/dailyChallengeService';
+import { CosmeticCategory } from '../services/cosmetics/cosmeticsCatalog';
+import {
+  ReplayGameMode,
+  QuickEscapeDifficulty,
+  generateQuickEscapePuzzle,
+  getPerfectClearMoveBudget,
+} from '../services/modes/gameModesService';
+import { recordPerfectClear, recordQuickEscapeWin } from '../services/storage/progressStorage';
 
 interface GameScreenProps {
   initialLevelId?: number;
+  isDailyChallenge?: boolean;
+  dailyDateStr?: string;
+  gameMode?: ReplayGameMode;
+  quickDifficulty?: QuickEscapeDifficulty;
   onNavigateHome?: () => void;
 }
 
 export const GameScreen: React.FC<GameScreenProps> = ({
   initialLevelId = 1,
+  isDailyChallenge = false,
+  dailyDateStr,
+  gameMode = 'CAMPAIGN',
+  quickDifficulty = 'NORMAL',
   onNavigateHome,
 }) => {
+  const effectiveMode: ReplayGameMode = isDailyChallenge ? 'DAILY' : gameMode;
   const [currentLevelId, setCurrentLevelId] = useState(initialLevelId);
+  const [quickEscapeRound, setQuickEscapeRound] = useState(0);
   const [unlockedLevel, setUnlockedLevel] = useState(1);
   const [levelStars, setLevelStars] = useState<Record<number, number>>({});
   const [hintsAvailable, setHintsAvailable] = useState(5);
@@ -69,34 +94,62 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const [isRewardedPromptOpen, setIsRewardedPromptOpen] = useState(false);
   const [isInterstitialOpen, setIsInterstitialOpen] = useState(false);
   const [isGrandCompletionOpen, setIsGrandCompletionOpen] = useState(false);
+  const [isHintModalOpen, setIsHintModalOpen] = useState(false);
+  const [isCosmeticsOpen, setIsCosmeticsOpen] = useState(false);
+  const [isVictoryGiftClaimed, setIsVictoryGiftClaimed] = useState(false);
+  const [activeHint, setActiveHint] = useState<TieredHintResult | null>(null);
+  const [progressData, setProgressData] = useState<UserProgressData>(DEFAULT_PROGRESS);
+  const [selectedSkin, setSelectedSkin] = useState<string>('classic');
+  const [selectedEscapeEffect, setSelectedEscapeEffect] = useState<string>('classic');
 
   // Load Persisted Progress on Initial Mount
-  useEffect(() => {
-    loadUserProgress().then(saved => {
-      setUnlockedLevel(saved.unlockedLevel);
-      setHintsAvailable(saved.hintsAvailable);
-      setSelectedThemeKey(saved.selectedTheme);
-      setSoundEnabled(saved.soundEnabled);
-      setHapticsEnabled(saved.hapticsEnabled);
-      setAdsRemoved(saved.adsRemoved);
-      audioService.setEnabled(saved.soundEnabled);
-      hapticsService.setEnabled(saved.hapticsEnabled);
-      admobService.setAdsRemoved(saved.adsRemoved);
+  const refreshProgress = useCallback(async () => {
+    const saved = await loadUserProgress();
+    setProgressData(saved);
+    setUnlockedLevel(saved.unlockedLevel);
+    setHintsAvailable(saved.hintsAvailable);
+    setSelectedThemeKey(saved.selectedTheme);
+    setSelectedSkin(saved.selectedSkin || 'classic');
+    setSelectedEscapeEffect(saved.selectedEscapeEffect || 'classic');
+    setSoundEnabled(saved.soundEnabled);
+    setHapticsEnabled(saved.hapticsEnabled);
+    setAdsRemoved(saved.adsRemoved);
+    audioService.setEnabled(saved.soundEnabled);
+    hapticsService.setEnabled(saved.hapticsEnabled);
+    admobService.setAdsRemoved(saved.adsRemoved);
 
-      const starsMap: Record<number, number> = {};
-      Object.entries(saved.levelRecords).forEach(([lvlId, rec]) => {
-        starsMap[Number(lvlId)] = rec.stars;
-      });
-      setLevelStars(starsMap);
+    const starsMap: Record<number, number> = {};
+    Object.entries(saved.levelRecords).forEach(([lvlId, rec]) => {
+      starsMap[Number(lvlId)] = rec.stars;
     });
+    setLevelStars(starsMap);
+  }, []);
+
+  useEffect(() => {
+    refreshProgress();
+  }, [refreshProgress]);
+
+  const handleEquipCosmetic = useCallback(async (category: CosmeticCategory, key: string) => {
+    const updated = await equipCosmetic(category, key);
+    setProgressData(updated);
+    if (category === 'skin') setSelectedSkin(key);
+    if (category === 'theme') setSelectedThemeKey(key);
+    if (category === 'effect') setSelectedEscapeEffect(key);
   }, []);
 
   const theme: ColorTheme = THEMES[selectedThemeKey] || defaultTheme;
 
   // Initialize Level Engine
   const currentLevelData = useMemo(() => {
+    if (effectiveMode === 'DAILY') {
+      return dailyChallengeService.getDailyPuzzle(dailyDateStr || getLocalDateString());
+    }
+    if (effectiveMode === 'QUICK_ESCAPE') {
+      const generated = generateQuickEscapePuzzle(quickDifficulty, Date.now() + quickEscapeRound * 100);
+      return generated.level;
+    }
     return getLevelById(currentLevelId) || CORE_LEVELS[0];
-  }, [currentLevelId]);
+  }, [currentLevelId, effectiveMode, dailyDateStr, quickDifficulty, quickEscapeRound]);
 
   const [gameState, setGameState] = useState<GameEngineState>(() =>
     initializeGameState(currentLevelData)
@@ -122,6 +175,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         setBlockedArrowId(null);
         setBlockerFlashId(null);
         setHintArrowId(null);
+        setActiveHint(null);
+        setIsVictoryGiftClaimed(false);
         setIsGrandCompletionOpen(false);
       }
     },
@@ -150,8 +205,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         setEscapingArrowIds(prev => [...prev, arrowId]);
 
         // Clear active hint if matching
-        if (hintArrowId === arrowId) {
+        if (hintArrowId === arrowId || activeHint?.targetArrowId === arrowId) {
           setHintArrowId(null);
+          setActiveHint(null);
         }
 
         // Sensory feedback
@@ -170,41 +226,76 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           hapticsService.vibrateSuccess();
 
           const stars = nextState.starsAwarded;
-          setLevelStars(prev => ({
-            ...prev,
-            [currentLevelId]: Math.max(prev[currentLevelId] || 0, stars),
-          }));
-          setUnlockedLevel(prev => Math.max(prev, currentLevelId + 1));
 
-          // Persist progress and trigger Google Play & AdMob sync
-          recordLevelCompletion(currentLevelId, stars, nextState.totalTaps);
-          admobService.onLevelCompleted();
+          // Mode-specific record persisting & badge awarding
+          if (effectiveMode === 'PRACTICE') {
+            // MODE C: Practice Mode does NOT alter original career records or unlock state
+            // Completely safe experimental sandbox
+          } else if (effectiveMode === 'DAILY') {
+            const dateStr = dailyDateStr || getLocalDateString();
+            dailyChallengeService.recordDailyCompletion(dateStr, stars, nextState.totalTaps);
+          } else if (effectiveMode === 'QUICK_ESCAPE') {
+            recordQuickEscapeWin();
+          } else if (effectiveMode === 'PERFECT_CLEAR') {
+            const moveBudget = getPerfectClearMoveBudget(currentLevelData);
+            if (nextState.totalTaps <= moveBudget) {
+              recordPerfectClear(currentLevelId);
+            }
+            recordLevelCompletion(
+              currentLevelId,
+              stars,
+              nextState.totalTaps,
+              currentLevelData.arrows.length,
+              25
+            );
+          } else {
+            // Standard Campaign
+            setLevelStars(prev => ({
+              ...prev,
+              [currentLevelId]: Math.max(prev[currentLevelId] || 0, stars),
+            }));
+            setUnlockedLevel(prev => Math.max(prev, currentLevelId + 1));
+            recordLevelCompletion(
+              currentLevelId,
+              stars,
+              nextState.totalTaps,
+              currentLevelData.arrows.length,
+              25
+            );
+            admobService.onLevelCompleted();
 
-          const updatedSolvedCount = Math.max(currentLevelId, unlockedLevel);
-          const threeStarCount = Object.values(levelStars).filter(s => s === 3).length + (stars === 3 ? 1 : 0);
-          playGamesService.syncProgressWithLevelRecords(updatedSolvedCount, threeStarCount);
+            const updatedSolvedCount = Math.max(currentLevelId, unlockedLevel);
+            const threeStarCount = Object.values(levelStars).filter(s => s === 3).length + (stars === 3 ? 1 : 0);
+            playGamesService.syncProgressWithLevelRecords(updatedSolvedCount, threeStarCount);
 
-          // Check if final level 500 completed
-          if (currentLevelId >= TOTAL_LEVELS) {
-            setTimeout(() => {
-              setIsGrandCompletionOpen(true);
-            }, 600);
+            // Check if final level 500 completed
+            if (currentLevelId >= TOTAL_LEVELS) {
+              setTimeout(() => {
+                setIsGrandCompletionOpen(true);
+              }, 600);
+            }
           }
         }
       } else {
-        // Blocked tap: Damped jiggle & blocker highlight flash
-        audioService.playBlockedThud();
-        hapticsService.vibrateWarning();
+        const wasRotated = targetArrow.type === 'ROTATING';
+        if (wasRotated) {
+          audioService.playClick();
+          hapticsService.vibrateLight();
+        } else {
+          // Blocked tap: Damped jiggle & blocker highlight flash
+          audioService.playBlockedThud();
+          hapticsService.vibrateWarning();
 
-        setBlockedArrowId(arrowId);
-        if (moveResult.diagnostic.blockerId) {
-          setBlockerFlashId(moveResult.diagnostic.blockerId);
+          setBlockedArrowId(arrowId);
+          if (moveResult.diagnostic.blockerId) {
+            setBlockerFlashId(moveResult.diagnostic.blockerId);
+          }
+
+          setTimeout(() => {
+            setBlockedArrowId(null);
+            setBlockerFlashId(null);
+          }, 360);
         }
-
-        setTimeout(() => {
-          setBlockedArrowId(null);
-          setBlockerFlashId(null);
-        }, 360);
 
         engineStateRef.current = nextState;
         setGameState(nextState);
@@ -233,10 +324,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     setBlockedArrowId(null);
     setBlockerFlashId(null);
     setHintArrowId(null);
+    setActiveHint(null);
+    setIsVictoryGiftClaimed(false);
     setIsGrandCompletionOpen(false);
   }, []);
 
-  // Handle Hint
+  // Handle Hint: Open 3-tier educational modal or rewarded prompt
   const handleHint = useCallback(() => {
     if (gameState.isCompleted) return;
 
@@ -245,13 +338,27 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       return;
     }
 
-    const recommendation = getHint(gameState.activeArrows, gameState.level);
-    if (recommendation.hasHint && recommendation.recommendedArrowId) {
-      audioService.playHintChime();
-      setHintArrowId(recommendation.recommendedArrowId);
-      updateHintsAvailable(-1).then(newCount => setHintsAvailable(newCount));
-    }
-  }, [hintsAvailable, gameState]);
+    setIsHintModalOpen(true);
+  }, [hintsAvailable, gameState.isCompleted]);
+
+  // Execute selected hint tier
+  const handleSelectHintTier = useCallback(
+    (tier: HintTierLevel) => {
+      setIsHintModalOpen(false);
+      const result = getTieredHint(tier, gameState.activeArrows, gameState.level);
+      if (result.hasHint) {
+        audioService.playHintChime();
+        hapticsService.vibrateLight();
+        setActiveHint(result);
+        setHintArrowId(result.targetArrowId);
+        if (result.blockerArrowId) {
+          setBlockerFlashId(result.blockerArrowId);
+        }
+        updateHintsAvailable(-1).then(newCount => setHintsAvailable(newCount));
+      }
+    },
+    [gameState.activeArrows, gameState.level]
+  );
 
   // Watch Rewarded Ad for Free Hint
   const handleWatchRewardedAd = useCallback(async () => {
@@ -259,6 +366,20 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     if (reward) {
       setHintsAvailable(prev => prev + reward.amount);
       audioService.playHintChime();
+    }
+  }, []);
+
+  // Watch Rewarded Ad for Victory Completion Gift (+2 hints)
+  const handleClaimVictoryGift = useCallback(async () => {
+    audioService.playClick();
+    hapticsService.vibrateLight();
+    const reward = await admobService.showRewardedAd();
+    if (reward) {
+      const nextHints = await updateHintsAvailable(1);
+      setHintsAvailable(nextHints);
+      setIsVictoryGiftClaimed(true);
+      audioService.playVictoryFanfare();
+      hapticsService.vibrateSuccess();
     }
   }, []);
 
@@ -325,13 +446,31 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   }, [loadLevel]);
 
   const proceedToNextLevel = useCallback(() => {
+    if (effectiveMode === 'QUICK_ESCAPE') {
+      setQuickEscapeRound(r => r + 1);
+      setEscapingArrowIds([]);
+      setEscapingArrows([]);
+      setBlockedArrowId(null);
+      setBlockerFlashId(null);
+      setHintArrowId(null);
+      setActiveHint(null);
+      setIsVictoryGiftClaimed(false);
+      return;
+    }
+
+    if (effectiveMode === 'PRACTICE' || effectiveMode === 'PERFECT_CLEAR') {
+      const nextId = Math.min(TOTAL_LEVELS, currentLevelId + 1);
+      loadLevel(nextId);
+      return;
+    }
+
     const nextId = currentLevelId + 1;
     if (nextId <= TOTAL_LEVELS) {
       loadLevel(nextId);
     } else {
       setIsGrandCompletionOpen(true);
     }
-  }, [currentLevelId, loadLevel]);
+  }, [currentLevelId, effectiveMode, loadLevel]);
 
   // Handle Next Level
   const handleNextLevel = useCallback(() => {
@@ -365,13 +504,38 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     return Object.values(levelStars).reduce((sum, s) => sum + s, 0);
   }, [levelStars]);
 
+  const mechanicTip = useMemo(() => {
+    const arrows = gameState.level.arrows;
+    if (gameState.level.id === 31 || arrows.some(a => a.type === 'LOCKED')) {
+      return '🔒 Locked Arrow: Clear other arrows first to unlock!';
+    }
+    if (gameState.level.id === 61 || arrows.some(a => a.type === 'KEY')) {
+      return '🔑 Key Arrow: Escape the key to unlock the chained arrow!';
+    }
+    if (gameState.level.id === 101 || arrows.some(a => a.type === 'ROTATING')) {
+      return '↻ Rotating Arrow: Tap while blocked to rotate direction!';
+    }
+    if (gameState.level.id === 161 || arrows.some(a => a.type === 'BOMB')) {
+      return '💣 Bomb Arrow: Escapes and clears neighboring arrows!';
+    }
+    return null;
+  }, [gameState.level]);
+
   return (
     <SafeAreaView style={[styles.rootContainer, { backgroundColor: theme.background }]}>
       <View style={styles.contentWrapper}>
         {/* Header with Home Button */}
         <GameHeader
           levelId={gameState.level.id}
-          levelTitle={gameState.level.title}
+          levelTitle={
+            effectiveMode === 'PRACTICE'
+              ? `🔬 Practice — ${gameState.level.title}`
+              : effectiveMode === 'PERFECT_CLEAR'
+              ? `🎯 Perfect Clear (Max ${getPerfectClearMoveBudget(currentLevelData)} Moves)`
+              : effectiveMode === 'QUICK_ESCAPE'
+              ? `⚡ Quick Escape #${quickEscapeRound + 1}`
+              : gameState.level.title
+          }
           totalArrows={gameState.level.arrows.length}
           totalTaps={gameState.totalTaps}
           theme={theme}
@@ -380,6 +544,85 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           onToggleTheme={handleToggleTheme}
           onOpenSettings={() => setIsSettingsOpen(true)}
         />
+
+        {/* Game Mode Banner */}
+        {effectiveMode !== 'CAMPAIGN' && effectiveMode !== 'DAILY' && (
+          <View
+            style={[
+              styles.tipBanner,
+              {
+                backgroundColor:
+                  effectiveMode === 'PRACTICE'
+                    ? 'rgba(16, 185, 129, 0.15)'
+                    : effectiveMode === 'PERFECT_CLEAR'
+                    ? 'rgba(236, 72, 153, 0.15)'
+                    : 'rgba(56, 189, 248, 0.15)',
+                borderColor:
+                  effectiveMode === 'PRACTICE'
+                    ? '#10B981'
+                    : effectiveMode === 'PERFECT_CLEAR'
+                    ? '#EC4899'
+                    : '#38BDF8',
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.tipText,
+                {
+                  color:
+                    effectiveMode === 'PRACTICE'
+                      ? '#10B981'
+                      : effectiveMode === 'PERFECT_CLEAR'
+                      ? '#EC4899'
+                      : '#38BDF8',
+                  fontWeight: '800',
+                },
+              ]}
+            >
+              {effectiveMode === 'PRACTICE' && '🔬 PRACTICE SANDBOX: Experiment freely. Career scores are not modified.'}
+              {effectiveMode === 'PERFECT_CLEAR' &&
+                `🎯 TARGET: Clear in ≤ ${getPerfectClearMoveBudget(currentLevelData)} moves! (${gameState.totalTaps}/${getPerfectClearMoveBudget(currentLevelData)} used)`}
+              {effectiveMode === 'QUICK_ESCAPE' && `⚡ QUICK ESCAPE (${quickDifficulty}): 100% solvable & fair endless session.`}
+            </Text>
+          </View>
+        )}
+
+        {/* Mechanic Tip Banner */}
+        {mechanicTip && (
+          <View style={[styles.tipBanner, { backgroundColor: theme.surface, borderColor: theme.boardBorder }]}>
+            <Text style={[styles.tipText, { color: theme.textSecondary }]}>{mechanicTip}</Text>
+          </View>
+        )}
+
+        {/* Active Educational Hint Banner */}
+        {activeHint && (
+          <View
+            style={[
+              styles.activeHintBanner,
+              { backgroundColor: theme.surfaceElevated, borderColor: '#38BDF8' },
+            ]}
+          >
+            <Text style={styles.activeHintIcon}>{activeHint.icon}</Text>
+            <View style={styles.activeHintTextCol}>
+              <Text style={styles.activeHintTitle}>{activeHint.title}</Text>
+              <Text style={[styles.activeHintDesc, { color: theme.textPrimary }]}>
+                {activeHint.explanation}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => {
+                setActiveHint(null);
+                setHintArrowId(null);
+                setBlockerFlashId(null);
+              }}
+              style={styles.activeHintDismiss}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.activeHintDismissText, { color: theme.textSecondary }]}>✕</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Board Center Stage */}
         <View style={styles.boardContainer}>
@@ -392,6 +635,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             blockedArrowId={blockedArrowId}
             blockerFlashId={blockerFlashId}
             theme={theme}
+            skin={selectedSkin}
+            escapeEffect={selectedEscapeEffect}
             maxBoardDimension={350}
             onArrowTap={handleArrowTap}
           />
@@ -409,11 +654,13 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         />
       </View>
 
-      {/* Bottom Banner Ad */}
-      <BannerAd
-        adsRemoved={adsRemoved}
-        onRemoveAdsPress={() => setIsSettingsOpen(true)}
-      />
+      {/* Bottom Banner Ad — Adaptive: hidden on dense grids (>5x5) to preserve board space */}
+      {gameState.level.width <= 5 && gameState.level.height <= 5 && (
+        <BannerAd
+          adsRemoved={adsRemoved}
+          onRemoveAdsPress={() => setIsSettingsOpen(true)}
+        />
+      )}
 
       {/* Level Select Modal (500 Levels Paginated) */}
       <LevelSelectModal
@@ -422,6 +669,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         unlockedLevel={unlockedLevel}
         levelStars={levelStars}
         theme={theme}
+        adsRemoved={adsRemoved}
         onSelectLevel={loadLevel}
         onClose={() => setIsLevelSelectOpen(false)}
       />
@@ -434,6 +682,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         selectedThemeKey={selectedThemeKey}
         adsRemoved={adsRemoved}
         theme={theme}
+        onOpenCosmetics={() => setIsCosmeticsOpen(true)}
         onToggleSound={handleToggleSound}
         onToggleHaptics={handleToggleHaptics}
         onSelectTheme={handleSelectTheme}
@@ -441,6 +690,19 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         onRestorePurchases={handleRestorePurchases}
         onResetProgress={handleResetProgress}
         onClose={() => setIsSettingsOpen(false)}
+      />
+
+      {/* Cosmetics Wardrobe & Vault Modal */}
+      <CosmeticsModal
+        visible={isCosmeticsOpen}
+        theme={theme}
+        progress={progressData}
+        onEquipCosmetic={handleEquipCosmetic}
+        onPurchaseVipSuccess={refreshProgress}
+        onClose={() => {
+          setIsCosmeticsOpen(false);
+          refreshProgress();
+        }}
       />
 
       {/* Rewarded Ad Prompt Modal */}
@@ -451,23 +713,46 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         onClose={() => setIsRewardedPromptOpen(false)}
       />
 
+      {/* 3-Tier Educational Hint Modal */}
+      <HintModal
+        visible={isHintModalOpen}
+        hintsAvailable={hintsAvailable}
+        theme={theme}
+        onSelectTier={handleSelectHintTier}
+        onWatchAdForHints={() => {
+          setIsHintModalOpen(false);
+          handleWatchRewardedAd();
+        }}
+        onClose={() => setIsHintModalOpen(false)}
+      />
+
       {/* Interstitial Ad Modal */}
       <AdInterstitialModal
         visible={isInterstitialOpen}
         onDismiss={handleDismissInterstitial}
       />
 
-      {/* Standard Victory Celebration Overlay (Levels 1 to 499) */}
-      {currentLevelId < TOTAL_LEVELS && (
+      {/* Standard Victory Celebration Overlay (Levels 1 to 499 & Daily & Game Modes) */}
+      {(currentLevelId < TOTAL_LEVELS || effectiveMode !== 'CAMPAIGN') && (
         <VictoryOverlay
           visible={gameState.isCompleted && !isGrandCompletionOpen}
-          levelId={gameState.level.id}
-          levelTitle={gameState.level.title}
+          levelId={effectiveMode === 'DAILY' ? 1 : gameState.level.id}
+          levelTitle={
+            effectiveMode === 'PRACTICE'
+              ? `Practice Solved!`
+              : effectiveMode === 'PERFECT_CLEAR'
+              ? `Perfect Clear Solved!`
+              : effectiveMode === 'QUICK_ESCAPE'
+              ? `Quick Escape Cleared!`
+              : gameState.level.title
+          }
           starsAwarded={gameState.starsAwarded || 1}
           totalTaps={gameState.totalTaps}
           targetMoves={gameState.level.arrows.length}
           theme={theme}
-          onNextLevel={handleNextLevel}
+          isGiftClaimed={isVictoryGiftClaimed}
+          onClaimGift={handleClaimVictoryGift}
+          onNextLevel={isDailyChallenge && onNavigateHome ? onNavigateHome : handleNextLevel}
           onReplay={handleRestart}
         />
       )}
@@ -512,5 +797,63 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     paddingVertical: 12,
+  },
+  tipBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginVertical: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+  },
+  activeHintBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    marginVertical: 4,
+    marginHorizontal: 12,
+    gap: 10,
+    shadowColor: '#38BDF8',
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  activeHintIcon: {
+    fontSize: 22,
+  },
+  activeHintTextCol: {
+    flex: 1,
+  },
+  activeHintTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  activeHintDesc: {
+    fontSize: 11,
+    lineHeight: 15,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  activeHintDismiss: {
+    padding: 6,
+  },
+  activeHintDismissText: {
+    fontSize: 14,
+    fontWeight: '800',
   },
 });

@@ -43,6 +43,23 @@ export function evaluateMove(
 
   const diagnostic = castEscapeRay(targetArrow, activeArrows, gridWidth, gridHeight);
 
+  // Locked arrows cannot escape until unlocked
+  if (targetArrow.isLocked) {
+    return {
+      success: false,
+      arrowId,
+      diagnostic: {
+        canEscape: false,
+        blockerId: 'LOCKED',
+        blockerPos: null,
+        rayPath: diagnostic.rayPath,
+      },
+      remainingArrows: activeArrows,
+      movesCount: 1,
+      isCompleted: false,
+    };
+  }
+
   if (diagnostic.canEscape) {
     const remainingArrows = activeArrows.filter(a => a.id !== arrowId);
     return {
@@ -74,5 +91,17 @@ export function isArrowClear(
   gridWidth: number,
   gridHeight: number
 ): boolean {
+  if (arrow.isLocked) return false;
   return castEscapeRay(arrow, activeArrows, gridWidth, gridHeight).canEscape;
+}
+
+/**
+ * Finds all arrows that currently have an unobstructed escape path.
+ */
+export function getValidMoves(
+  activeArrows: readonly ArrowConfig[],
+  gridWidth: number,
+  gridHeight: number
+): ArrowConfig[] {
+  return activeArrows.filter(arrow => isArrowClear(arrow, activeArrows, gridWidth, gridHeight));
 }
