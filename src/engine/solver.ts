@@ -33,8 +33,14 @@ export function solveLevel(level: LevelData, maxSolutionsToFind = 5): SolverRepo
   const visitedStates = new Set<string>();
   let deadEnds = 0;
 
+  const MAX_STATES_TO_EXPLORE = 2500;
+
   function backtrack(remainingArrows: ArrowConfig[], currentPath: string[]): void {
     if (solutions.length >= maxSolutionsToFind) {
+      return;
+    }
+
+    if (visitedStates.size >= MAX_STATES_TO_EXPLORE) {
       return;
     }
 
@@ -168,8 +174,13 @@ export function solveLevel(level: LevelData, maxSolutionsToFind = 5): SolverRepo
   const isSolvable = totalSolutions > 0;
   const firstSolution = isSolvable ? solutions[0] : [];
 
-  const maxBranch = branchingFactors.length > 0 ? Math.max(...branchingFactors) : 0;
-  const minBranch = branchingFactors.length > 0 ? Math.min(...branchingFactors) : 0;
+  let maxBranch = 0;
+  let minBranch = branchingFactors.length > 0 ? branchingFactors[0] : 0;
+  for (let i = 0; i < branchingFactors.length; i++) {
+    const b = branchingFactors[i];
+    if (b > maxBranch) maxBranch = b;
+    if (b < minBranch) minBranch = b;
+  }
   const avgBranch =
     branchingFactors.length > 0
       ? Number(

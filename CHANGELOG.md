@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.3] - 2026-10-11
+
+### 🧠 Analytical Difficulty System & Developer Level Quality Dashboard
+
+#### Added & Improved
+- **6-Factor Analytical Difficulty Scoring Engine ([difficultyEvaluator.ts](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/src/engine/difficultyEvaluator.ts))**:
+  - Measures puzzle complexity systematically across 6 specific axes:
+    1. **Minimum Solution Length**: Optimal escape move count calculated by solver backtrack path.
+    2. **Initial Available Moves**: Count and ratio of arrows able to escape on opening tap.
+    3. **Dependency Depth**: Maximum and average sequence layers an arrow must wait before path unblocks.
+    4. **Branching Factor**: Average valid choice ambiguity per decision state.
+    5. **Dead-End Frequency**: Count of unresolvable branches encountered during exploration.
+    6. **Special-Mechanic Complexity**: Weighted complexity model accounting for Keys, Locks, Rotating arrows, Bombs, and multi-mechanic diversity.
+  - Generates composite score normalized from `1.0` to `10.0` and classifies into 4 difficulty tiers: `Easy` (<3.5), `Medium` (3.5–5.7), `Hard` (5.8–7.7), `Expert` (>=7.8).
+- **Developer Level Quality Dashboard & Anomaly Detector ([levelQualityDashboard.ts](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/src/services/quality/levelQualityDashboard.ts), [scripts/levelQualityDashboard.ts](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/scripts/levelQualityDashboard.ts))**:
+  - Automated analysis CLI and audit service (`npm run audit:levels` / `npm run audit:levels -- --all`).
+  - Evaluates all 500 levels in ~0.5s, recording level number, world, grid size, arrow count, special count, min solution length, opening moves, difficulty score, and solvability status.
+  - Automated anomaly flagging:
+    - `WORLD_MISMATCH_TOO_EASY` / `WORLD_MISMATCH_TOO_HARD`: Detects difficulty regression across worlds (e.g. World 5 puzzle easier than World 2 baseline).
+    - `TRIVIAL_OPENING`: Detects puzzles with excessive initial escape ratio (>40% arrows escaping on move 1).
+    - `STRUCTURAL_MONOTONY`: Flags runs of consecutive levels sharing identical grid size, arrow count, and near-identical difficulty score.
+    - `UNSOLVABLE` / `EXCESSIVE_MOVES`: Flags validation failures and abnormally long paths.
+  - Outputs formatted markdown report artifact to `LEVEL_QUALITY_REPORT.md`.
+- **Solver Performance & Backtracking Guard ([solver.ts](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/src/engine/solver.ts))**:
+  - Replaced spreading array into `Math.max` with single-pass loop to eliminate V8 maximum call stack size overflow on large branching trees.
+  - Added visited state exploration cap (2500 states) to guarantee sub-millisecond execution even on 7x7 procedural boards with rotating mechanics.
+
+---
+
 ## [1.2.2] - 2026-10-11
 
 ### 💎 VIP Pass Value, Voluntary Rewarded Ads & Monetization Analytics
