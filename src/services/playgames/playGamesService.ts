@@ -3,6 +3,8 @@
  * Integrates achievements, XP rewards, and player profile persistence.
  */
 
+import { resolveSaveConflict } from '../storage/progressStorage';
+
 export interface PlayGamesAchievement {
   readonly id: string;
   readonly name: string;
@@ -237,6 +239,30 @@ class PlayGamesService {
       snapshotId,
       account: this.profile.displayName,
     };
+  }
+
+  /**
+   * Syncs local progress with cloud, resolving conflicts with Highest Progress Union
+   */
+  public async syncWithCloud(localProgress: any): Promise<{
+    mergedProgress: any;
+    resolvedConflict: boolean;
+  }> {
+    try {
+      const raw = localStorage.getItem('arrow_escape_google_play_cloud_save_v1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.progress) {
+          const merged = resolveSaveConflict(localProgress, parsed.progress);
+          await this.saveToCloud(merged);
+          return { mergedProgress: merged, resolvedConflict: true };
+        }
+      }
+    } catch {
+      // ignore
+    }
+    await this.saveToCloud(localProgress);
+    return { mergedProgress: localProgress, resolvedConflict: false };
   }
 
   public getCloudSaveMetadata(): {
