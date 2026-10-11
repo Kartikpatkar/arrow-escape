@@ -342,6 +342,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
         unlockedLevel={unlockedLevel}
         levelStars={levelStars}
         theme={theme}
+        adsRemoved={adsRemoved}
         onSelectLevel={lvl => onStartGame(lvl)}
         onClose={() => setIsLevelSelectOpen(false)}
       />

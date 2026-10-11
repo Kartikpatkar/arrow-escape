@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { ColorTheme } from '../../theme/colors';
 import { WORLDS, getWorldForLevel, calculateWorldProgress, WorldDef } from '../../data/worlds/worldData';
+import { BannerAd } from '../ads/BannerAd';
 
 interface LevelSelectModalProps {
   visible: boolean;
@@ -21,6 +22,7 @@ interface LevelSelectModalProps {
   unlockedLevel: number;
   levelStars: Record<number, number>;
   theme: ColorTheme;
+  adsRemoved?: boolean;
   onSelectLevel: (levelId: number) => void;
   onClose: () => void;
 }
@@ -31,6 +33,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
   unlockedLevel,
   levelStars,
   theme,
+  adsRemoved = false,
   onSelectLevel,
   onClose,
 }) => {
@@ -259,6 +262,9 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
             );
           })}
         </ScrollView>
+
+        {/* Integrated Bottom Banner for Level Selection */}
+        <BannerAd adsRemoved={adsRemoved} />
       </View>
     </View>
   );

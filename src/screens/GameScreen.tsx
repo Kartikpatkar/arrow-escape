@@ -83,6 +83,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const [isGrandCompletionOpen, setIsGrandCompletionOpen] = useState(false);
   const [isHintModalOpen, setIsHintModalOpen] = useState(false);
   const [isCosmeticsOpen, setIsCosmeticsOpen] = useState(false);
+  const [isVictoryGiftClaimed, setIsVictoryGiftClaimed] = useState(false);
   const [activeHint, setActiveHint] = useState<TieredHintResult | null>(null);
   const [progressData, setProgressData] = useState<UserProgressData>(DEFAULT_PROGRESS);
   const [selectedSkin, setSelectedSkin] = useState<string>('classic');
@@ -158,6 +159,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         setBlockerFlashId(null);
         setHintArrowId(null);
         setActiveHint(null);
+        setIsVictoryGiftClaimed(false);
         setIsGrandCompletionOpen(false);
       }
     },
@@ -288,6 +290,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     setBlockerFlashId(null);
     setHintArrowId(null);
     setActiveHint(null);
+    setIsVictoryGiftClaimed(false);
     setIsGrandCompletionOpen(false);
   }, []);
 
@@ -328,6 +331,20 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     if (reward) {
       setHintsAvailable(prev => prev + reward.amount);
       audioService.playHintChime();
+    }
+  }, []);
+
+  // Watch Rewarded Ad for Victory Completion Gift (+2 hints)
+  const handleClaimVictoryGift = useCallback(async () => {
+    audioService.playClick();
+    hapticsService.vibrateLight();
+    const reward = await admobService.showRewardedAd();
+    if (reward) {
+      const nextHints = await updateHintsAvailable(1);
+      setHintsAvailable(nextHints);
+      setIsVictoryGiftClaimed(true);
+      audioService.playVictoryFanfare();
+      hapticsService.vibrateSuccess();
     }
   }, []);
 
@@ -533,11 +550,13 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         />
       </View>
 
-      {/* Bottom Banner Ad */}
-      <BannerAd
-        adsRemoved={adsRemoved}
-        onRemoveAdsPress={() => setIsSettingsOpen(true)}
-      />
+      {/* Bottom Banner Ad — Adaptive: hidden on dense grids (>5x5) to preserve board space */}
+      {gameState.level.width <= 5 && gameState.level.height <= 5 && (
+        <BannerAd
+          adsRemoved={adsRemoved}
+          onRemoveAdsPress={() => setIsSettingsOpen(true)}
+        />
+      )}
 
       {/* Level Select Modal (500 Levels Paginated) */}
       <LevelSelectModal
@@ -546,6 +565,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         unlockedLevel={unlockedLevel}
         levelStars={levelStars}
         theme={theme}
+        adsRemoved={adsRemoved}
         onSelectLevel={loadLevel}
         onClose={() => setIsLevelSelectOpen(false)}
       />
@@ -618,6 +638,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           totalTaps={gameState.totalTaps}
           targetMoves={gameState.level.arrows.length}
           theme={theme}
+          isGiftClaimed={isVictoryGiftClaimed}
+          onClaimGift={handleClaimVictoryGift}
           onNextLevel={isDailyChallenge && onNavigateHome ? onNavigateHome : handleNextLevel}
           onReplay={handleRestart}
         />

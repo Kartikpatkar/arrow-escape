@@ -139,21 +139,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Monetization / In-App Purchases */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>STORE</Text>
+          <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>STORE & PURCHASES</Text>
           {adsRemoved ? (
-            <View style={[styles.adFreeBadge, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+            <View style={[styles.adFreeBadge, { backgroundColor: 'rgba(34, 197, 94, 0.15)', borderColor: '#22C55E' }]}>
               <Text style={styles.adFreeText}>✨ Ad-Free Supporter Active</Text>
+              <Text style={[styles.adFreeSubtext, { color: theme.textSecondary }]}>
+                Banner & Interstitial ads permanently disabled. Optional rewarded ads remain accessible for bonus hints & gifts.
+              </Text>
             </View>
           ) : (
-            <TouchableOpacity
-              onPress={onPurchaseRemoveAds}
-              style={[styles.removeAdsBtn, { backgroundColor: theme.arrowBody }]}
-            >
-              <Text style={styles.removeAdsBtnText}>💎 Remove Ads ($1.99)</Text>
-            </TouchableOpacity>
+            <View style={styles.storeCard}>
+              <TouchableOpacity
+                onPress={onPurchaseRemoveAds}
+                style={[styles.removeAdsBtn, { backgroundColor: theme.arrowBody }]}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.removeAdsBtnText}>💎 Remove Ads ($1.99)</Text>
+              </TouchableOpacity>
+              <Text style={[styles.storeOfferNote, { color: theme.textMuted }]}>
+                Permanently removes all Banner & Interstitial ads. Rewarded ads remain 100% optional for bonus hints and gifts.
+              </Text>
+            </View>
           )}
 
-          <TouchableOpacity onPress={onRestorePurchases} style={styles.restoreBtn}>
+          <TouchableOpacity onPress={onRestorePurchases} style={styles.restoreBtn} activeOpacity={0.7}>
             <Text style={[styles.restoreBtnText, { color: theme.textSecondary }]}>Restore Purchases</Text>
           </TouchableOpacity>
         </View>
@@ -309,17 +318,36 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontSize: 14,
   },
+  storeCard: {
+    width: '100%',
+    marginBottom: 8,
+  },
+  storeOfferNote: {
+    fontSize: 10,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 2,
+    lineHeight: 14,
+  },
   adFreeBadge: {
     paddingVertical: 12,
+    paddingHorizontal: 12,
     borderRadius: 14,
     borderWidth: 1.5,
     alignItems: 'center',
     marginBottom: 8,
   },
   adFreeText: {
-    color: '#059669',
+    color: '#10B981',
     fontWeight: '800',
     fontSize: 13,
+  },
+  adFreeSubtext: {
+    fontSize: 10,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 4,
+    lineHeight: 14,
   },
   restoreBtn: {
     alignItems: 'center',

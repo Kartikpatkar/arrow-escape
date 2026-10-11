@@ -16,6 +16,8 @@ interface VictoryOverlayProps {
   totalTaps: number;
   targetMoves: number;
   theme: ColorTheme;
+  isGiftClaimed?: boolean;
+  onClaimGift?: () => void;
   onNextLevel: () => void;
   onReplay: () => void;
 }
@@ -23,11 +25,13 @@ interface VictoryOverlayProps {
 export const VictoryOverlay: React.FC<VictoryOverlayProps> = ({
   visible,
   levelId,
-  levelTitle,
+  levelTitle: _levelTitle,
   starsAwarded,
   totalTaps,
   targetMoves,
   theme,
+  isGiftClaimed = false,
+  onClaimGift,
   onNextLevel,
   onReplay,
 }) => {
@@ -54,6 +58,10 @@ export const VictoryOverlay: React.FC<VictoryOverlayProps> = ({
     2: 'GREAT PUZZLE SOLVE!',
     1: 'LEVEL COMPLETED!',
   };
+
+  // Score computation: base 1000 + stars * 500 + efficiency bonus
+  const efficiencyBonus = Math.max(0, (targetMoves - totalTaps + 4) * 75);
+  const calculatedScore = 1000 + starsAwarded * 500 + efficiencyBonus;
 
   return (
     <View style={styles.overlayBackdrop}>
@@ -91,6 +99,22 @@ export const VictoryOverlay: React.FC<VictoryOverlayProps> = ({
           })}
         </View>
 
+        {/* Score & Stars Earned Card */}
+        <View style={[styles.scoreBanner, { backgroundColor: theme.surfaceElevated || 'rgba(0,0,0,0.2)' }]}>
+          <View style={styles.scoreRow}>
+            <Text style={styles.scoreIcon}>🏆</Text>
+            <View>
+              <Text style={[styles.scoreLabel, { color: theme.textMuted }]}>PUZZLE SCORE</Text>
+              <Text style={[styles.scoreValue, { color: theme.accent }]}>
+                {calculatedScore.toLocaleString()} PTS
+              </Text>
+            </View>
+          </View>
+          <View style={[styles.starBadgePill, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
+            <Text style={styles.starBadgeText}>+{starsAwarded} ★ EARNED</Text>
+          </View>
+        </View>
+
         {/* Performance Summary */}
         <View style={[styles.statsCard, { backgroundColor: theme.boardBg }]}>
           <View style={styles.statRow}>
@@ -98,10 +122,41 @@ export const VictoryOverlay: React.FC<VictoryOverlayProps> = ({
             <Text style={[styles.statValue, { color: theme.textPrimary }]}>{totalTaps}</Text>
           </View>
           <View style={styles.statRow}>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Optimal Moves:</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Target Moves:</Text>
             <Text style={[styles.statValue, { color: theme.victoryGlow }]}>{targetMoves}</Text>
           </View>
         </View>
+
+        {/* Optional Rewarded Ad Level Gift */}
+        {onClaimGift && (
+          <View style={[styles.giftCard, { borderColor: isGiftClaimed ? '#22C55E' : theme.accent }]}>
+            {isGiftClaimed ? (
+              <View style={styles.giftClaimedRow}>
+                <Text style={styles.giftClaimedIcon}>✓</Text>
+                <Text style={styles.giftClaimedText}>Bonus Gift Claimed: +2 Hints Added!</Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={[styles.giftBtn, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}
+                onPress={onClaimGift}
+                activeOpacity={0.85}
+              >
+                <View style={styles.giftBtnLeft}>
+                  <Text style={styles.giftIcon}>🎁</Text>
+                  <View>
+                    <Text style={[styles.giftTitle, { color: theme.textPrimary }]}>Bonus Level Gift</Text>
+                    <Text style={[styles.giftDesc, { color: theme.accent }]}>
+                      Claim +2 Free Hints & +500 XP
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.adBadge}>
+                  <Text style={styles.adBadgeText}>Ad</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
 
         {/* Action CTAs */}
         <View style={styles.buttonStack}>
@@ -246,5 +301,103 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 1,
+  },
+  scoreBanner: {
+    width: '100%',
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    marginVertical: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  scoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  scoreIcon: {
+    fontSize: 22,
+  },
+  scoreLabel: {
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  scoreValue: {
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  starBadgePill: {
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  starBadgeText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#F59E0B',
+  },
+  giftCard: {
+    width: '100%',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  giftBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  giftBtnLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  giftIcon: {
+    fontSize: 22,
+  },
+  giftTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  giftDesc: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 1,
+  },
+  adBadge: {
+    backgroundColor: '#F59E0B',
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  adBadgeText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  giftClaimedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+    gap: 6,
+  },
+  giftClaimedIcon: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#22C55E',
+  },
+  giftClaimedText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#22C55E',
   },
 });
