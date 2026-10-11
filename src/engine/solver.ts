@@ -4,7 +4,7 @@
  */
 
 import { ArrowConfig, LevelData } from './types';
-import { getValidMoves } from './hintEngine';
+import { getValidMoves } from './moveValidator';
 
 export interface SolverReport {
   readonly isSolvable: boolean;

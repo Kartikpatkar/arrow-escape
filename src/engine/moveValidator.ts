@@ -94,3 +94,14 @@ export function isArrowClear(
   if (arrow.isLocked) return false;
   return castEscapeRay(arrow, activeArrows, gridWidth, gridHeight).canEscape;
 }
+
+/**
+ * Finds all arrows that currently have an unobstructed escape path.
+ */
+export function getValidMoves(
+  activeArrows: readonly ArrowConfig[],
+  gridWidth: number,
+  gridHeight: number
+): ArrowConfig[] {
+  return activeArrows.filter(arrow => isArrowClear(arrow, activeArrows, gridWidth, gridHeight));
+}

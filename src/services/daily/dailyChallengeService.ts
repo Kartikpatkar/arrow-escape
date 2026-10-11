@@ -6,6 +6,7 @@
 import { ArrowConfig, Direction, LevelData } from '../../engine/types';
 import { solveLevel } from '../../engine/solver';
 import { playGamesService } from '../playgames/playGamesService';
+import { updateHintsAvailable } from '../storage/progressStorage';
 
 export interface DailyRecord {
   readonly date: string; // YYYY-MM-DD
@@ -361,6 +362,9 @@ class DailyChallengeService {
     const unlockedMilestones = STREAK_MILESTONES.filter(m => m.days === newStreak);
     const milestoneXp = unlockedMilestones.reduce((acc, m) => acc + m.xpReward, 0);
     const earnedBonusXp = 100 + milestoneXp; // Base 100 XP + milestone XP
+
+    // Award +1 Hint economy bonus for daily completion
+    updateHintsAvailable(1);
 
     this.saveState();
 

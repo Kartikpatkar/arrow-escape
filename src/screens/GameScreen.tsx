@@ -38,6 +38,8 @@ import { SettingsModal } from '../components/game/SettingsModal';
 import { RewardedAdPromptModal } from '../components/game/RewardedAdPromptModal';
 import { AdInterstitialModal } from '../components/game/AdInterstitialModal';
 import { GrandCompletionModal } from '../components/game/GrandCompletionModal';
+import { HintModal } from '../components/game/HintModal';
+import { getTieredHint, HintTierLevel, TieredHintResult } from '../engine/hintEngine';
 import { BannerAd } from '../components/ads/BannerAd';
 import { dailyChallengeService, getLocalDateString } from '../services/daily/dailyChallengeService';
 
@@ -74,6 +76,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const [isRewardedPromptOpen, setIsRewardedPromptOpen] = useState(false);
   const [isInterstitialOpen, setIsInterstitialOpen] = useState(false);
   const [isGrandCompletionOpen, setIsGrandCompletionOpen] = useState(false);
+  const [isHintModalOpen, setIsHintModalOpen] = useState(false);
+  const [activeHint, setActiveHint] = useState<TieredHintResult | null>(null);
 
   // Load Persisted Progress on Initial Mount
   useEffect(() => {
@@ -130,6 +134,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         setBlockedArrowId(null);
         setBlockerFlashId(null);
         setHintArrowId(null);
+        setActiveHint(null);
         setIsGrandCompletionOpen(false);
       }
     },
@@ -158,8 +163,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         setEscapingArrowIds(prev => [...prev, arrowId]);
 
         // Clear active hint if matching
-        if (hintArrowId === arrowId) {
+        if (hintArrowId === arrowId || activeHint?.targetArrowId === arrowId) {
           setHintArrowId(null);
+          setActiveHint(null);
         }
 
         // Sensory feedback
@@ -258,10 +264,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     setBlockedArrowId(null);
     setBlockerFlashId(null);
     setHintArrowId(null);
+    setActiveHint(null);
     setIsGrandCompletionOpen(false);
   }, []);
 
-  // Handle Hint
+  // Handle Hint: Open 3-tier educational modal or rewarded prompt
   const handleHint = useCallback(() => {
     if (gameState.isCompleted) return;
 
@@ -270,13 +277,27 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       return;
     }
 
-    const recommendation = getHint(gameState.activeArrows, gameState.level);
-    if (recommendation.hasHint && recommendation.recommendedArrowId) {
-      audioService.playHintChime();
-      setHintArrowId(recommendation.recommendedArrowId);
-      updateHintsAvailable(-1).then(newCount => setHintsAvailable(newCount));
-    }
-  }, [hintsAvailable, gameState]);
+    setIsHintModalOpen(true);
+  }, [hintsAvailable, gameState.isCompleted]);
+
+  // Execute selected hint tier
+  const handleSelectHintTier = useCallback(
+    (tier: HintTierLevel) => {
+      setIsHintModalOpen(false);
+      const result = getTieredHint(tier, gameState.activeArrows, gameState.level);
+      if (result.hasHint) {
+        audioService.playHintChime();
+        hapticsService.vibrateLight();
+        setActiveHint(result);
+        setHintArrowId(result.targetArrowId);
+        if (result.blockerArrowId) {
+          setBlockerFlashId(result.blockerArrowId);
+        }
+        updateHintsAvailable(-1).then(newCount => setHintsAvailable(newCount));
+      }
+    },
+    [gameState.activeArrows, gameState.level]
+  );
 
   // Watch Rewarded Ad for Free Hint
   const handleWatchRewardedAd = useCallback(async () => {
@@ -430,6 +451,35 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           </View>
         )}
 
+        {/* Active Educational Hint Banner */}
+        {activeHint && (
+          <View
+            style={[
+              styles.activeHintBanner,
+              { backgroundColor: theme.surfaceElevated, borderColor: '#38BDF8' },
+            ]}
+          >
+            <Text style={styles.activeHintIcon}>{activeHint.icon}</Text>
+            <View style={styles.activeHintTextCol}>
+              <Text style={styles.activeHintTitle}>{activeHint.title}</Text>
+              <Text style={[styles.activeHintDesc, { color: theme.textPrimary }]}>
+                {activeHint.explanation}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => {
+                setActiveHint(null);
+                setHintArrowId(null);
+                setBlockerFlashId(null);
+              }}
+              style={styles.activeHintDismiss}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.activeHintDismissText, { color: theme.textSecondary }]}>✕</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Board Center Stage */}
         <View style={styles.boardContainer}>
           <Board
@@ -498,6 +548,19 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         theme={theme}
         onWatchAd={handleWatchRewardedAd}
         onClose={() => setIsRewardedPromptOpen(false)}
+      />
+
+      {/* 3-Tier Educational Hint Modal */}
+      <HintModal
+        visible={isHintModalOpen}
+        hintsAvailable={hintsAvailable}
+        theme={theme}
+        onSelectTier={handleSelectHintTier}
+        onWatchAdForHints={() => {
+          setIsHintModalOpen(false);
+          handleWatchRewardedAd();
+        }}
+        onClose={() => setIsHintModalOpen(false)}
       />
 
       {/* Interstitial Ad Modal */}
@@ -580,5 +643,44 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     letterSpacing: 0.2,
+  },
+  activeHintBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    marginVertical: 4,
+    marginHorizontal: 12,
+    gap: 10,
+    shadowColor: '#38BDF8',
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  activeHintIcon: {
+    fontSize: 22,
+  },
+  activeHintTextCol: {
+    flex: 1,
+  },
+  activeHintTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  activeHintDesc: {
+    fontSize: 11,
+    lineHeight: 15,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  activeHintDismiss: {
+    padding: 6,
+  },
+  activeHintDismissText: {
+    fontSize: 14,
+    fontWeight: '800',
   },
 });
