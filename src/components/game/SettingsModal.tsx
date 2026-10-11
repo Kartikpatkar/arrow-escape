@@ -14,6 +14,7 @@ interface SettingsModalProps {
   selectedThemeKey: string;
   adsRemoved: boolean;
   theme: ColorTheme;
+  onOpenCosmetics?: () => void;
   onToggleSound: (enabled: boolean) => void;
   onToggleHaptics: (enabled: boolean) => void;
   onSelectTheme: (themeKey: string) => void;
@@ -30,6 +31,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   selectedThemeKey,
   adsRemoved,
   theme,
+  onOpenCosmetics,
   onToggleSound,
   onToggleHaptics,
   onSelectTheme,
@@ -89,7 +91,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Theme Picker */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>VISUAL THEME</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Text style={[styles.sectionTitle, { color: theme.textSecondary, marginBottom: 0 }]}>VISUAL THEMES & SKINS</Text>
+            {onOpenCosmetics && (
+              <TouchableOpacity
+                onPress={() => {
+                  onClose();
+                  onOpenCosmetics();
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={{ fontSize: 12, fontWeight: '800', color: theme.accent }}>Full Vault ✨</Text>
+              </TouchableOpacity>
+            )}
+          </View>
           <View style={styles.themeRow}>
             {Object.keys(THEMES).map(tKey => {
               const th = THEMES[tKey];

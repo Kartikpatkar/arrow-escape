@@ -27,11 +27,13 @@ import { LevelSelectModal } from '../components/game/LevelSelectModal';
 import { AchievementsModal } from '../components/game/AchievementsModal';
 import { SettingsModal } from '../components/game/SettingsModal';
 import { StatisticsModal } from '../components/game/StatisticsModal';
+import { CosmeticsModal } from '../components/game/CosmeticsModal';
 import { BannerAd } from '../components/ads/BannerAd';
 import { DailyChallengeCard } from '../components/daily/DailyChallengeCard';
 import { dailyChallengeService, getLocalDateString, DailyChallengeState } from '../services/daily/dailyChallengeService';
 import { getPlayerStatsSummary, PlayerStatsSummary } from '../services/progression/progressionService';
-import { UserProgressData, DEFAULT_PROGRESS } from '../services/storage/progressStorage';
+import { UserProgressData, DEFAULT_PROGRESS, equipCosmetic } from '../services/storage/progressStorage';
+import { CosmeticCategory } from '../services/cosmetics/cosmeticsCatalog';
 
 interface HomeScreenProps {
   onStartGame: (levelId: number, isDaily?: boolean, dailyDate?: string) => void;
@@ -53,6 +55,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
   const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isStatisticsOpen, setIsStatisticsOpen] = useState(false);
+  const [isCosmeticsOpen, setIsCosmeticsOpen] = useState(false);
+
+  const handleEquipCosmetic = useCallback(async (category: CosmeticCategory, key: string) => {
+    const updated = await equipCosmetic(category, key);
+    setProgressData(updated);
+    if (category === 'theme') {
+      setSelectedThemeKey(key);
+    }
+  }, []);
 
   // Load Persisted Data
   const refreshProgress = useCallback(async () => {
@@ -221,7 +232,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
           }}
         />
 
-        {/* 2x2 Bento Tiles Grid */}
+        {/* Bento Tiles Grid */}
         <View style={styles.bentoGrid}>
           {/* Tile 1: Level Packs */}
           <TouchableOpacity
@@ -239,7 +250,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
             <Text style={styles.tileSubtitle}>6 Worlds • 500 Puzzles</Text>
           </TouchableOpacity>
 
-          {/* Tile 2: Statistics Dashboard */}
+          {/* Tile 2: Visual Vault & Wardrobe */}
+          <TouchableOpacity
+            style={styles.bentoTile}
+            onPress={() => {
+              audioService.playClick();
+              setIsCosmeticsOpen(true);
+            }}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.tileIconCircle, { backgroundColor: 'rgba(236, 72, 153, 0.2)' }]}>
+              <Text style={styles.tileIcon}>✨</Text>
+            </View>
+            <Text style={styles.tileTitle}>Visual Vault</Text>
+            <Text style={styles.tileSubtitle}>Skins, Themes & FX</Text>
+          </TouchableOpacity>
+
+          {/* Tile 3: Statistics Dashboard */}
           <TouchableOpacity
             style={styles.bentoTile}
             onPress={() => {
@@ -255,7 +282,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
             <Text style={styles.tileSubtitle}>KPIs & Career Records</Text>
           </TouchableOpacity>
 
-          {/* Tile 3: Play Games Achievements */}
+          {/* Tile 4: Play Games Achievements */}
           <TouchableOpacity
             style={styles.bentoTile}
             onPress={() => {
@@ -271,7 +298,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
             <Text style={styles.tileSubtitle}>Google Play XP Badges</Text>
           </TouchableOpacity>
 
-          {/* Tile 4: Settings */}
+          {/* Tile 5: Settings */}
           <TouchableOpacity
             style={styles.bentoTile}
             onPress={() => {
@@ -343,6 +370,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
         selectedThemeKey={selectedThemeKey}
         adsRemoved={adsRemoved}
         theme={theme}
+        onOpenCosmetics={() => setIsCosmeticsOpen(true)}
         onToggleSound={handleToggleSound}
         onToggleHaptics={handleToggleHaptics}
         onSelectTheme={handleSelectTheme}
@@ -351,6 +379,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartGame }) => {
         onResetProgress={handleResetProgress}
         onClose={() => {
           setIsSettingsOpen(false);
+          refreshProgress();
+        }}
+      />
+
+      {/* Cosmetics Wardrobe & Vault Modal */}
+      <CosmeticsModal
+        visible={isCosmeticsOpen}
+        theme={theme}
+        progress={progressData}
+        dailyState={dailyState}
+        onEquipCosmetic={handleEquipCosmetic}
+        onPurchaseVipSuccess={refreshProgress}
+        onClose={() => {
+          setIsCosmeticsOpen(false);
           refreshProgress();
         }}
       />

@@ -19,6 +19,8 @@ interface BoardProps {
   blockedArrowId: string | null;
   blockerFlashId: string | null;
   theme: ColorTheme;
+  skin?: string;
+  escapeEffect?: string;
   maxBoardDimension?: number;
   onArrowTap: (arrowId: string) => void;
 }
@@ -32,6 +34,8 @@ export const Board: React.FC<BoardProps> = ({
   blockedArrowId,
   blockerFlashId,
   theme,
+  skin = 'classic',
+  escapeEffect = 'classic',
   maxBoardDimension = 360,
   onArrowTap,
 }) => {
@@ -62,6 +66,10 @@ export const Board: React.FC<BoardProps> = ({
       <View
         style={[
           styles.rainbowBezel,
+          theme.isLight && {
+            backgroundImage: 'linear-gradient(135deg, #FDE68A, #BAE6FD, #DDD6FE, #FBCFE8)' as any,
+            shadowColor: 'rgba(0, 0, 0, 0.15)',
+          },
           {
             width: boardWidth + 14,
             height: boardHeight + 14,
@@ -123,7 +131,7 @@ export const Board: React.FC<BoardProps> = ({
               >
                 {/* Tactile recessed well center ring */}
                 <View style={styles.emptySlotRing}>
-                  <Text style={styles.emptyWellIcon}>?</Text>
+                  <Text style={[styles.emptyWellIcon, { color: theme.textMuted }]}>?</Text>
                 </View>
               </View>
             ))}
@@ -147,6 +155,8 @@ export const Board: React.FC<BoardProps> = ({
                   isHinted={isHinted}
                   isBlockerFlash={isBlockerFlash}
                   theme={theme}
+                  skin={skin}
+                  escapeEffect={escapeEffect}
                   onTap={onArrowTap}
                 />
               );

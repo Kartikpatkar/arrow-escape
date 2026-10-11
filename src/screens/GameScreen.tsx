@@ -23,6 +23,9 @@ import {
   updateHintsAvailable,
   saveUserProgress,
   resetAllProgress,
+  equipCosmetic,
+  UserProgressData,
+  DEFAULT_PROGRESS,
 } from '../services/storage/progressStorage';
 import { audioService } from '../services/audio/audioService';
 import { hapticsService } from '../services/haptics/hapticsService';
@@ -35,6 +38,7 @@ import { GameControls } from '../components/game/GameControls';
 import { VictoryOverlay } from '../components/game/VictoryOverlay';
 import { LevelSelectModal } from '../components/game/LevelSelectModal';
 import { SettingsModal } from '../components/game/SettingsModal';
+import { CosmeticsModal } from '../components/game/CosmeticsModal';
 import { RewardedAdPromptModal } from '../components/game/RewardedAdPromptModal';
 import { AdInterstitialModal } from '../components/game/AdInterstitialModal';
 import { GrandCompletionModal } from '../components/game/GrandCompletionModal';
@@ -42,6 +46,7 @@ import { HintModal } from '../components/game/HintModal';
 import { getTieredHint, HintTierLevel, TieredHintResult } from '../engine/hintEngine';
 import { BannerAd } from '../components/ads/BannerAd';
 import { dailyChallengeService, getLocalDateString } from '../services/daily/dailyChallengeService';
+import { CosmeticCategory } from '../services/cosmetics/cosmeticsCatalog';
 
 interface GameScreenProps {
   initialLevelId?: number;
@@ -77,27 +82,45 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const [isInterstitialOpen, setIsInterstitialOpen] = useState(false);
   const [isGrandCompletionOpen, setIsGrandCompletionOpen] = useState(false);
   const [isHintModalOpen, setIsHintModalOpen] = useState(false);
+  const [isCosmeticsOpen, setIsCosmeticsOpen] = useState(false);
   const [activeHint, setActiveHint] = useState<TieredHintResult | null>(null);
+  const [progressData, setProgressData] = useState<UserProgressData>(DEFAULT_PROGRESS);
+  const [selectedSkin, setSelectedSkin] = useState<string>('classic');
+  const [selectedEscapeEffect, setSelectedEscapeEffect] = useState<string>('classic');
 
   // Load Persisted Progress on Initial Mount
-  useEffect(() => {
-    loadUserProgress().then(saved => {
-      setUnlockedLevel(saved.unlockedLevel);
-      setHintsAvailable(saved.hintsAvailable);
-      setSelectedThemeKey(saved.selectedTheme);
-      setSoundEnabled(saved.soundEnabled);
-      setHapticsEnabled(saved.hapticsEnabled);
-      setAdsRemoved(saved.adsRemoved);
-      audioService.setEnabled(saved.soundEnabled);
-      hapticsService.setEnabled(saved.hapticsEnabled);
-      admobService.setAdsRemoved(saved.adsRemoved);
+  const refreshProgress = useCallback(async () => {
+    const saved = await loadUserProgress();
+    setProgressData(saved);
+    setUnlockedLevel(saved.unlockedLevel);
+    setHintsAvailable(saved.hintsAvailable);
+    setSelectedThemeKey(saved.selectedTheme);
+    setSelectedSkin(saved.selectedSkin || 'classic');
+    setSelectedEscapeEffect(saved.selectedEscapeEffect || 'classic');
+    setSoundEnabled(saved.soundEnabled);
+    setHapticsEnabled(saved.hapticsEnabled);
+    setAdsRemoved(saved.adsRemoved);
+    audioService.setEnabled(saved.soundEnabled);
+    hapticsService.setEnabled(saved.hapticsEnabled);
+    admobService.setAdsRemoved(saved.adsRemoved);
 
-      const starsMap: Record<number, number> = {};
-      Object.entries(saved.levelRecords).forEach(([lvlId, rec]) => {
-        starsMap[Number(lvlId)] = rec.stars;
-      });
-      setLevelStars(starsMap);
+    const starsMap: Record<number, number> = {};
+    Object.entries(saved.levelRecords).forEach(([lvlId, rec]) => {
+      starsMap[Number(lvlId)] = rec.stars;
     });
+    setLevelStars(starsMap);
+  }, []);
+
+  useEffect(() => {
+    refreshProgress();
+  }, [refreshProgress]);
+
+  const handleEquipCosmetic = useCallback(async (category: CosmeticCategory, key: string) => {
+    const updated = await equipCosmetic(category, key);
+    setProgressData(updated);
+    if (category === 'skin') setSelectedSkin(key);
+    if (category === 'theme') setSelectedThemeKey(key);
+    if (category === 'effect') setSelectedEscapeEffect(key);
   }, []);
 
   const theme: ColorTheme = THEMES[selectedThemeKey] || defaultTheme;
@@ -491,6 +514,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             blockedArrowId={blockedArrowId}
             blockerFlashId={blockerFlashId}
             theme={theme}
+            skin={selectedSkin}
+            escapeEffect={selectedEscapeEffect}
             maxBoardDimension={350}
             onArrowTap={handleArrowTap}
           />
@@ -533,6 +558,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         selectedThemeKey={selectedThemeKey}
         adsRemoved={adsRemoved}
         theme={theme}
+        onOpenCosmetics={() => setIsCosmeticsOpen(true)}
         onToggleSound={handleToggleSound}
         onToggleHaptics={handleToggleHaptics}
         onSelectTheme={handleSelectTheme}
@@ -540,6 +566,19 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         onRestorePurchases={handleRestorePurchases}
         onResetProgress={handleResetProgress}
         onClose={() => setIsSettingsOpen(false)}
+      />
+
+      {/* Cosmetics Wardrobe & Vault Modal */}
+      <CosmeticsModal
+        visible={isCosmeticsOpen}
+        theme={theme}
+        progress={progressData}
+        onEquipCosmetic={handleEquipCosmetic}
+        onPurchaseVipSuccess={refreshProgress}
+        onClose={() => {
+          setIsCosmeticsOpen(false);
+          refreshProgress();
+        }}
       />
 
       {/* Rewarded Ad Prompt Modal */}

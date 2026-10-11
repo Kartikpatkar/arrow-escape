@@ -14,6 +14,10 @@ export interface UserProgressData {
   levelRecords: Record<number, LevelRecord>;
   hintsAvailable: number;
   selectedTheme: string;
+  selectedSkin?: string;
+  selectedEscapeEffect?: string;
+  unlockedCosmetics?: string[];
+  cosmeticsVipUnlocked?: boolean;
   soundEnabled: boolean;
   hapticsEnabled: boolean;
   adsRemoved: boolean;
@@ -29,6 +33,10 @@ export const DEFAULT_PROGRESS: UserProgressData = {
   levelRecords: {},
   hintsAvailable: 5,
   selectedTheme: 'dawn',
+  selectedSkin: 'classic',
+  selectedEscapeEffect: 'classic',
+  unlockedCosmetics: ['theme:dawn', 'theme:paperLight', 'skin:classic', 'effect:classic'],
+  cosmeticsVipUnlocked: false,
   soundEnabled: true,
   hapticsEnabled: true,
   adsRemoved: false,
@@ -180,6 +188,34 @@ export async function updateHintsAvailable(delta: number): Promise<number> {
 }
 
 /**
+ * Equips an unlocked cosmetic item
+ */
+export async function equipCosmetic(category: 'skin' | 'theme' | 'effect', key: string): Promise<UserProgressData> {
+  const updates: Partial<UserProgressData> = {};
+  if (category === 'skin') {
+    updates.selectedSkin = key;
+  } else if (category === 'theme') {
+    updates.selectedTheme = key;
+  } else if (category === 'effect') {
+    updates.selectedEscapeEffect = key;
+  }
+  return saveUserProgress(updates);
+}
+
+/**
+ * Permanently unlocks a cosmetic item
+ */
+export async function unlockCosmetic(itemId: string): Promise<UserProgressData> {
+  const current = memoryCache.unlockedCosmetics || [];
+  if (!current.includes(itemId)) {
+    return saveUserProgress({
+      unlockedCosmetics: [...current, itemId],
+    });
+  }
+  return memoryCache;
+}
+
+/**
  * Resets all progress back to factory defaults
  */
 export async function resetAllProgress(): Promise<UserProgressData> {
@@ -195,3 +231,4 @@ export async function resetAllProgress(): Promise<UserProgressData> {
   }
   return memoryCache;
 }
+
