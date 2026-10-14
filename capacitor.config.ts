@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.arrowescape.puzzle',
-  appName: 'Arrow Escape',
+  appId: 'com.kartikkp.arrowescape',
+  appName: 'Arrow Escape: Arrow Puzzle',
   webDir: 'dist'
 };
 

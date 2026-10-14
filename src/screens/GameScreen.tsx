@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, SafeAreaView } from 'react-native';
+import { StyleSheet, View, Text, SafeAreaView, useWindowDimensions } from 'react-native';
 import {
   GameEngineState,
   initializeGameState,
@@ -21,6 +21,7 @@ import {
   loadUserProgress,
   recordLevelCompletion,
   updateHintsAvailable,
+  updateAnimationPacing,
   saveUserProgress,
   resetAllProgress,
   equipCosmetic,
@@ -32,6 +33,7 @@ import { hapticsService } from '../services/haptics/hapticsService';
 import { admobService } from '../services/ads/admobService';
 import { billingService } from '../services/billing/billingService';
 import { playGamesService } from '../services/playgames/playGamesService';
+import { monetizationAnalytics } from '../services/analytics/monetizationAnalytics';
 import { Board } from '../components/game/Board';
 import { GameHeader } from '../components/game/GameHeader';
 import { GameControls } from '../components/game/GameControls';
@@ -109,6 +111,13 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const [progressData, setProgressData] = useState<UserProgressData>(DEFAULT_PROGRESS);
   const [selectedSkin, setSelectedSkin] = useState<string>('classic');
   const [selectedEscapeEffect, setSelectedEscapeEffect] = useState<string>('classic');
+  const [escapeDurationMs, setEscapeDurationMs] = useState(650);
+  const lastEscapeTimeRef = useRef<number>(0);
+
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const responsiveBoardDimension = useMemo(() => {
+    return Math.min(360, Math.max(270, Math.floor(Math.min(windowWidth - 32, windowHeight * 0.46))));
+  }, [windowWidth, windowHeight]);
 
   // Load Persisted Progress on Initial Mount
   const refreshProgress = useCallback(async () => {
@@ -238,6 +247,24 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         engineStateRef.current = nextState;
         setGameState(nextState);
 
+        // Dynamic Animation Duration: Rapid combos accelerate, final victory gets grand swoop
+        const now = Date.now();
+        const isRapidCombo = now - lastEscapeTimeRef.current < 750 || escapingArrowIds.length > 0;
+        lastEscapeTimeRef.current = now;
+        const isFinalArrow = nextState.isCompleted;
+
+        const pacing = progressData.animationPacing || 'dynamic';
+        let flightDuration = 650;
+        if (pacing === 'fast') {
+          flightDuration = isFinalArrow ? 750 : 380;
+        } else if (pacing === 'cinematic') {
+          flightDuration = isFinalArrow ? 1200 : 900;
+        } else {
+          // Dynamic combo: 450ms for consecutive rapid moves, 1200ms grand finale
+          flightDuration = isFinalArrow ? 1200 : isRapidCombo ? 450 : 650;
+        }
+        setEscapeDurationMs(flightDuration);
+
         // Keep flying arrow visible in DOM until flight animation completes
         setEscapingArrows(prev => [...prev, targetArrow]);
         setEscapingArrowIds(prev => [...prev, arrowId]);
@@ -252,11 +279,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         audioService.playEscapePop(nextState.escapedArrowIds.length);
         hapticsService.vibrateLight();
 
-        // Remove from animation track after smooth swoosh (1250ms)
+        // Remove from animation track dynamically
         setTimeout(() => {
           setEscapingArrows(prev => prev.filter(a => a.id !== arrowId));
           setEscapingArrowIds(prev => prev.filter(id => id !== arrowId));
-        }, 1250);
+        }, flightDuration + 50);
 
         // Level Complete
         if (nextState.isCompleted) {
@@ -372,6 +399,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     if (gameState.isCompleted) return;
 
     if (hintsAvailable <= 0) {
+      monetizationAnalytics.trackAdOffered('hints');
       setIsRewardedPromptOpen(true);
       return;
     }
@@ -398,21 +426,24 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     [gameState.activeArrows, gameState.level]
   );
 
-  // Watch Rewarded Ad for Free Hint
+  // Watch Rewarded Ad for Free Hint (Voluntary request when stuck)
   const handleWatchRewardedAd = useCallback(async () => {
     const reward = await admobService.showRewardedAd();
     if (reward) {
+      monetizationAnalytics.trackAdCompleted('hints');
       setHintsAvailable(prev => prev + reward.amount);
       audioService.playHintChime();
     }
   }, []);
 
-  // Watch Rewarded Ad for Victory Completion Gift (+2 hints)
+  // Watch Rewarded Ad for Victory Completion Gift (+2 hints) (Secondary voluntary bonus)
   const handleClaimVictoryGift = useCallback(async () => {
     audioService.playClick();
     hapticsService.vibrateLight();
+    monetizationAnalytics.trackAdOffered('bonus_xp');
     const reward = await admobService.showRewardedAd();
     if (reward) {
+      monetizationAnalytics.trackAdCompleted('bonus_xp');
       const nextHints = await updateHintsAvailable(1);
       setHintsAvailable(nextHints);
       setIsVictoryGiftClaimed(true);
@@ -425,6 +456,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const handlePurchaseRemoveAds = useCallback(async () => {
     const res = await billingService.purchaseRemoveAds();
     if (res.success) {
+      monetizationAnalytics.trackProductPurchased('remove_ads', 1.99);
       setAdsRemoved(true);
       admobService.setAdsRemoved(true);
       audioService.playVictoryFanfare();
@@ -477,6 +509,47 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       onPropSelectTheme(themeKey);
     }
   }, [onPropSelectTheme]);
+
+  // Handle Animation Pacing from Settings
+  const handleSelectAnimationPacing = useCallback(async (pacing: 'dynamic' | 'fast' | 'cinematic') => {
+    audioService.playClick();
+    const updated = await updateAnimationPacing(pacing);
+    setProgressData(updated);
+  }, []);
+
+  // Tutorial introduction explanation for special mechanic milestones
+  const tutorialInfo = useMemo(() => {
+    const title = currentLevelData.title.toLowerCase();
+    if (title.includes('locked')) {
+      return {
+        icon: '🔒',
+        title: 'NEW MECHANIC: LOCKED ARROW',
+        desc: 'Solve other unblocked arrows first to meet the unlock counter!',
+      };
+    }
+    if (title.includes('key')) {
+      return {
+        icon: '🔑',
+        title: 'NEW MECHANIC: KEY & LOCK',
+        desc: 'Free the Key arrow first to immediately unlock the paired Lock arrow!',
+      };
+    }
+    if (title.includes('rotating')) {
+      return {
+        icon: '↻',
+        title: 'NEW MECHANIC: ROTATING ARROW',
+        desc: 'Tap arrow to spin 90° clockwise until an open exit path appears!',
+      };
+    }
+    if (title.includes('bomb')) {
+      return {
+        icon: '💣',
+        title: 'NEW MECHANIC: BOMB ARROW',
+        desc: 'Launch the Bomb arrow to detonate and clear adjacent blocking arrows!',
+      };
+    }
+    return null;
+  }, [currentLevelData.title]);
 
   // Handle Reset Progress
   const handleResetProgress = useCallback(async () => {
@@ -670,6 +743,28 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
         {/* Board Center Stage */}
         <View style={styles.boardContainer}>
+          {tutorialInfo && (
+            <View
+              style={[
+                styles.tutorialBanner,
+                {
+                  backgroundColor: theme.surfaceElevated || '#1E293B',
+                  borderColor: theme.accent,
+                },
+              ]}
+            >
+              <Text style={styles.tutorialIcon}>{tutorialInfo.icon}</Text>
+              <View style={styles.tutorialTextCol}>
+                <Text style={[styles.tutorialTitle, { color: theme.accent }]}>
+                  {tutorialInfo.title}
+                </Text>
+                <Text style={[styles.tutorialDesc, { color: theme.textPrimary }]}>
+                  {tutorialInfo.desc}
+                </Text>
+              </View>
+            </View>
+          )}
+
           <Board
             width={gameState.level.width}
             height={gameState.level.height}
@@ -681,7 +776,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             theme={theme}
             skin={selectedSkin}
             escapeEffect={selectedEscapeEffect}
-            maxBoardDimension={350}
+            escapeDurationMs={escapeDurationMs}
+            maxBoardDimension={responsiveBoardDimension}
             onArrowTap={handleArrowTap}
           />
         </View>
@@ -724,12 +820,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         soundEnabled={soundEnabled}
         hapticsEnabled={hapticsEnabled}
         selectedThemeKey={selectedThemeKey}
+        animationPacing={progressData.animationPacing}
         adsRemoved={adsRemoved}
         theme={theme}
         onOpenCosmetics={() => setIsCosmeticsOpen(true)}
         onToggleSound={handleToggleSound}
         onToggleHaptics={handleToggleHaptics}
         onSelectTheme={handleSelectTheme}
+        onSelectAnimationPacing={handleSelectAnimationPacing}
         onPurchaseRemoveAds={handlePurchaseRemoveAds}
         onRestorePurchases={handleRestorePurchases}
         onResetProgress={handleResetProgress}
@@ -897,5 +995,39 @@ const styles = StyleSheet.create({
   activeHintDismissText: {
     fontSize: 14,
     fontWeight: '800',
+  },
+  tutorialBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    marginBottom: 8,
+    marginHorizontal: 8,
+    gap: 8,
+    maxWidth: 380,
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tutorialIcon: {
+    fontSize: 20,
+  },
+  tutorialTextCol: {
+    flex: 1,
+  },
+  tutorialTitle: {
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 0.4,
+  },
+  tutorialDesc: {
+    fontSize: 10,
+    fontWeight: '600',
+    lineHeight: 13,
+    marginTop: 2,
   },
 });

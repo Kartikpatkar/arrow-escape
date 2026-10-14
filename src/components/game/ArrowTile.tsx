@@ -21,6 +21,7 @@ interface ArrowTileProps {
   theme: ColorTheme;
   skin?: string;
   escapeEffect?: string;
+  escapeDurationMs?: number;
   onTap: (arrowId: string) => void;
 }
 
@@ -253,6 +254,7 @@ export const ArrowTile: React.FC<ArrowTileProps> = ({
   theme,
   skin = 'classic',
   escapeEffect = 'classic',
+  escapeDurationMs = 650,
   onTap,
 }) => {
   const [shakeOffset, setShakeOffset] = useState(0);
@@ -337,7 +339,7 @@ export const ArrowTile: React.FC<ArrowTileProps> = ({
           ],
           opacity: flyOffset.opacity,
           transition: isEscaping
-            ? 'transform 1200ms cubic-bezier(0.25, 0.1, 0.25, 1), opacity 1150ms cubic-bezier(0.8, 0, 0.95, 0.1)'
+            ? `transform ${escapeDurationMs}ms cubic-bezier(0.25, 0.1, 0.25, 1), opacity ${Math.max(120, escapeDurationMs - 60)}ms cubic-bezier(0.8, 0, 0.95, 0.1)`
             : 'transform 80ms ease',
         } as any,
       ]}

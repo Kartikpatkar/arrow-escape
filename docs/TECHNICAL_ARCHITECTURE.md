@@ -149,3 +149,26 @@ Key: `@arrow_escape_user_progress_v1`
 }
 ```
 All read/writes are batched and cached in-memory with debounced async sync to disk to prevent I/O blocking.
+
+---
+
+## 5. Save Integrity, Resiliency & Cloud Conflict Resolution
+
+### A. Threat Model & Philosophy
+In an offline-first single-player casual puzzle game:
+- Client-side checksum hashing (`computeChecksum`) operates as an **accidental corruption detector and casual tamper deterrent**, not an absolute security boundary against dedicated reverse engineering.
+- Robustness and player data safety take priority: the game never crashes on malformed save data.
+
+### B. Defensive Validation & Error Recovery
+1. **Schema Sanitization (`sanitizeProgress`)**: Validates data types, clamps `unlockedLevel` to `1..501`, clamps `hintsAvailable` to `0..9999`, bounds star ratings to `1..3`, and verifies non-negative move counts.
+2. **Corrupt Payload Recovery**: If storage contains malformed or unparseable JSON, the engine catches the exception gracefully, logs a diagnostic warning, and restores clean default progress without crashing.
+3. **App Update Migration**: Progress envelopes support backward-compatible payload migration and field additions.
+
+### C. Cloud Save Conflict Resolution (`resolveSaveConflict`)
+When synchronizing with Google Play Cloud Save across multiple devices:
+- **Resolution Strategy**: Deterministic **"Highest Progress Union"** policy.
+- **Level Progress**: `Math.max(local.unlockedLevel, remote.unlockedLevel)`.
+- **Level Records**: Union of completed levels. For overlapping levels, preserves highest star rating and lowest move count.
+- **Hints Bank**: `Math.max(local.hintsAvailable, remote.hintsAvailable)`.
+- **Entitlements**: `local.adsRemoved || remote.adsRemoved` (purchases never lost).
+- **Cosmetics & Badges**: Set union of unlocked cosmetics and badges across both devices.

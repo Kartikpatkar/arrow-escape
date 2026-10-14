@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Arrow Escape: Arrow Puzzle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --text-main: #0F172A;
+      --text-muted: #64748B;
+      --accent: #6366F1;
+      --border: #E2E8F0;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      padding: 48px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+    @media (max-width: 640px) {
+      body {
+        padding: 16px 12px;
+      }
+      .container {
+        padding: 24px 20px;
+        border-radius: 16px;
+      }
+    }
+    .badge {
+      display: inline-block;
+      background: #EEF2FF;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-top: 32px;
+      margin-bottom: 12px;
+    }
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      color: #334155;
+    }
+    p {
+      margin-bottom: 14px;
+      color: #334155;
+      font-size: 15px;
+    }
+    ul {
+      margin-left: 20px;
+      margin-bottom: 16px;
+      color: #334155;
+      font-size: 15px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+    .info-card {
+      background: #F1F5F9;
+      border-left: 4px solid var(--accent);
+      padding: 16px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    footer {
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="badge">Official Policy</div>
+    <h1>Privacy Policy</h1>
+    <div class="meta">
+      <strong>Arrow Escape: Arrow Puzzle</strong> (<code>com.kartikkp.arrowescape</code>)<br>
+      Effective Date: October 15, 2026 | Developer: Kartik Patkar
+    </div>
+
+    <div class="info-card">
+      <strong>Summary:</strong> Arrow Escape is an offline-friendly casual puzzle game. We do not collect personal identification data, we do not require account registration, and we do not sell any user data.
+    </div>
+
+    <h2>1. Introduction</h2>
+    <p>This Privacy Policy explains how <strong>Arrow Escape: Arrow Puzzle</strong> ("the App", "we", "us", or "our"), published by <strong>Kartik Patkar</strong>, treats user and device data in compliance with the <strong>Google Play Developer Program Policies</strong> and <strong>Google Play User Data Policies</strong>.</p>
+
+    <h2>2. Information Collection and Use</h2>
+    <h3>A. No Personal Identifiable Information (PII)</h3>
+    <p>We do not collect, harvest, or transmit personal details such as names, phone numbers, email addresses, contact lists, GPS location, camera, or microphone data. You can play all 500 levels and daily challenges completely anonymously without creating an account.</p>
+
+    <h3>B. Local Device Storage</h3>
+    <p>To provide core game progression, the App stores gameplay state locally on your device via standard Android SharedPreferences and Capacitor storage. This data includes:</p>
+    <ul>
+      <li>Completed puzzle levels, world milestones, and star ratings.</li>
+      <li>Daily Challenge completion streaks and calendar history.</li>
+      <li>In-game inventory (available hints, star balances).</li>
+      <li>Customization preferences (active board themes, arrow skins, escape effects).</li>
+      <li>Sound, haptics, and pacing toggles.</li>
+      <li>Cryptographic HMAC checksums used solely for verifying offline save integrity against corruption.</li>
+    </ul>
+    <p>This information remains strictly on your local device and is never uploaded to any proprietary private servers.</p>
+
+    <h2>3. Device Permissions &amp; Transparency</h2>
+    <p>The App requests only standard Android permissions necessary for gameplay:</p>
+    <ul>
+      <li><code>android.permission.VIBRATE</code>: Triggers tactile haptic feedback when tapping arrows or making moves. This can be muted at any time via the in-game Settings.</li>
+      <li><code>android.permission.INTERNET</code>: Enables connectivity with official Google Play Services for optional digital purchases (VIP Pass, Remove Ads) and voluntary rewarded videos.</li>
+      <li><code>android.permission.POST_NOTIFICATIONS</code>: Enables optional, local calendar alerts for daily challenge puzzles. No external promotional push notifications are sent.</li>
+    </ul>
+
+    <h2>4. Third-Party Services &amp; In-App Billing</h2>
+    <p>The App integrates official Google services that may process technical device telemetry in accordance with their respective privacy policies:</p>
+    <ul>
+      <li><strong>Google Play In-App Billing</strong>: Securely processes purchases for optional digital unlocks (such as the VIP Pass or Remove Ads). We never collect or store your payment card numbers or banking information; all financial transactions are encrypted and managed exclusively by Google Play. (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>)</li>
+      <li><strong>Google Mobile Ads (AdMob)</strong>: Provides voluntary rewarded video ads (e.g. voluntary free hint assistance or replaying missed daily puzzles). We strictly forbid intrusive forced interstitial ads during active puzzle gameplay. (<a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">Google Ads Policy</a>)</li>
+    </ul>
+
+    <h2>5. Data Sharing &amp; Sale</h2>
+    <p>We do not sell, rent, monetize, or disclose any user data to third parties, brokers, or marketing agencies.</p>
+
+    <h2>6. Data Deletion &amp; Control</h2>
+    <p>You have full control over your data at all times:</p>
+    <ul>
+      <li>In-game: Tap <strong>"⚠️ Reset Game Progress"</strong> in the Settings menu to wipe all local progress immediately.</li>
+      <li>Android System: Navigate to <strong>Settings &gt; Apps &gt; Arrow Escape &gt; Storage &gt; Clear Storage</strong>, or simply uninstall the App to permanently remove all stored data.</li>
+    </ul>
+
+    <h2>7. Children's Privacy (COPPA)</h2>
+    <p>Arrow Escape: Arrow Puzzle is designed for general casual puzzle audiences. We do not knowingly solicit or collect personal information from children under 13. If you have reason to believe that a child has provided us with any data, please contact us and we will promptly investigate.</p>
+
+    <h2>8. Security</h2>
+    <p>We implement industry-standard security safeguards. All communications with Google Play Services use secure, encrypted TLS/HTTPS protocols.</p>
+
+    <h2>9. Contact Us</h2>
+    <p>If you have any questions, suggestions, or privacy inquiries regarding Arrow Escape, please contact:</p>
+    <ul>
+      <li><strong>Developer:</strong> Kartik Patkar</li>
+      <li><strong>Application:</strong> Arrow Escape: Arrow Puzzle (<code>com.kartikkp.arrowescape</code>)</li>
+      <li><strong>Email:</strong> <a href="mailto:kartikkp.assets@gmail.com">kartikkp.assets@gmail.com</a></li>
+    </ul>
+
+    <footer>
+      &copy; 2026 Arrow Escape: Arrow Puzzle • Developed with care by Kartik Patkar
+    </footer>
+  </div>
+</body>
+</html>

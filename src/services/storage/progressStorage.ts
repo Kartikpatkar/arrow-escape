@@ -27,6 +27,7 @@ export interface UserProgressData {
   totalMovesMade: number;
   totalArrowsEscaped: number;
   totalPlayTimeSeconds: number;
+  animationPacing?: 'dynamic' | 'fast' | 'cinematic';
 }
 
 export const STORAGE_KEY = '@arrow_escape_user_progress_v1';
@@ -49,6 +50,7 @@ export const DEFAULT_PROGRESS: UserProgressData = {
   totalMovesMade: 0,
   totalArrowsEscaped: 0,
   totalPlayTimeSeconds: 0,
+  animationPacing: 'dynamic',
 };
 
 // In-memory backing store for tests / SSR / non-browser environments
@@ -85,6 +87,13 @@ function setRawItem(key: string, value: string): void {
   } catch (e) {
     // fallback
   }
+}
+
+/**
+ * Testing utility to inject raw stored values (simulating corrupt data or updates)
+ */
+export function setRawStorageForTest(key: string, value: string): void {
+  setRawItem(key, value);
 }
 
 const CHECKSUM_SALT = 'ae_v1_integrity_salt_8f49a21b';
@@ -137,6 +146,62 @@ function sanitizeProgress(parsed: any): UserProgressData {
     hintsAvailable: hints,
     levelRecords: cleanRecords,
   };
+}
+
+/**
+ * Merges local and remote cloud save states using deterministic "Highest Progress Union" policy:
+ * - Unlocked Level: Math.max(local, remote)
+ * - Level Records: Union of levels. For shared levels, keeps highest stars & best (lowest) moves.
+ * - Hints: Math.max(local, remote)
+ * - Entitlements: Ads removed if either is true; VIP unlocked if either is true.
+ * - Cosmetics: Set union of unlocked cosmetics.
+ * - Badges: Union of perfect clear badges.
+ */
+export function resolveSaveConflict(local: UserProgressData, remote: UserProgressData): UserProgressData {
+  const cleanLocal = sanitizeProgress(local);
+  const cleanRemote = sanitizeProgress(remote);
+
+  // Union of level records
+  const mergedRecords: Record<number, LevelRecord> = { ...cleanLocal.levelRecords };
+  Object.entries(cleanRemote.levelRecords).forEach(([key, remoteRec]) => {
+    const id = Number(key);
+    const localRec = mergedRecords[id];
+    if (!localRec) {
+      mergedRecords[id] = remoteRec;
+    } else {
+      mergedRecords[id] = {
+        stars: Math.max(localRec.stars, remoteRec.stars),
+        bestMoves: Math.min(localRec.bestMoves, remoteRec.bestMoves),
+        completedAt: Math.max(localRec.completedAt, remoteRec.completedAt),
+      };
+    }
+  });
+
+  // Cosmetics set union
+  const localCosmetics = cleanLocal.unlockedCosmetics || [];
+  const remoteCosmetics = cleanRemote.unlockedCosmetics || [];
+  const mergedCosmetics = Array.from(new Set([...localCosmetics, ...remoteCosmetics]));
+
+  // Perfect clear badges set union
+  const localBadges = cleanLocal.perfectClearBadges || [];
+  const remoteBadges = cleanRemote.perfectClearBadges || [];
+  const mergedBadges = Array.from(new Set([...localBadges, ...remoteBadges]));
+
+  return sanitizeProgress({
+    ...cleanLocal,
+    unlockedLevel: Math.max(cleanLocal.unlockedLevel, cleanRemote.unlockedLevel),
+    levelRecords: mergedRecords,
+    hintsAvailable: Math.max(cleanLocal.hintsAvailable, cleanRemote.hintsAvailable),
+    adsRemoved: cleanLocal.adsRemoved || cleanRemote.adsRemoved,
+    cosmeticsVipUnlocked: cleanLocal.cosmeticsVipUnlocked || cleanRemote.cosmeticsVipUnlocked,
+    unlockedCosmetics: mergedCosmetics,
+    perfectClearBadges: mergedBadges,
+    perfectClearsCount: Math.max(cleanLocal.perfectClearsCount || 0, cleanRemote.perfectClearsCount || 0),
+    quickEscapeWins: Math.max(cleanLocal.quickEscapeWins || 0, cleanRemote.quickEscapeWins || 0),
+    totalMovesMade: Math.max(cleanLocal.totalMovesMade || 0, cleanRemote.totalMovesMade || 0),
+    totalArrowsEscaped: Math.max(cleanLocal.totalArrowsEscaped || 0, cleanRemote.totalArrowsEscaped || 0),
+    totalPlayTimeSeconds: Math.max(cleanLocal.totalPlayTimeSeconds || 0, cleanRemote.totalPlayTimeSeconds || 0),
+  });
 }
 
 /**
@@ -318,6 +383,12 @@ export async function recordQuickEscapeWin(): Promise<UserProgressData> {
 /**
  * Resets all progress back to factory defaults
  */
+export async function updateAnimationPacing(
+  pacing: 'dynamic' | 'fast' | 'cinematic'
+): Promise<UserProgressData> {
+  return saveUserProgress({ animationPacing: pacing });
+}
+
 export async function resetAllProgress(): Promise<UserProgressData> {
   memoryCache = { ...DEFAULT_PROGRESS };
   memoryStore = {};
@@ -331,4 +402,5 @@ export async function resetAllProgress(): Promise<UserProgressData> {
   }
   return memoryCache;
 }
+
 

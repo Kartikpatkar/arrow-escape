@@ -68,6 +68,23 @@ describe('Cosmetics Catalog & Unlock Engine', () => {
       expect(keys).toContain('starExplosion');
       expect(keys).toContain('crystalShatter');
     });
+
+    it('identifies VIP Collection catalog correctly', () => {
+      const { getVipCollectionCatalog, VIP_COLLECTION_ITEMS } = require('../../src/services/cosmetics/cosmeticsCatalog');
+      const catalog = getVipCollectionCatalog();
+      expect(catalog.themes.length).toBe(6);
+      expect(catalog.skins.length).toBe(5);
+      expect(catalog.effects.length).toBe(4);
+      expect(VIP_COLLECTION_ITEMS.length).toBe(15);
+
+      // Verify distinction between free starter and VIP items
+      const classic = ARROW_SKINS.find(s => s.key === 'classic')!;
+      const galaxy = ARROW_SKINS.find(s => s.key === 'galaxy')!;
+      expect(classic.tier).toBe('free');
+      expect(classic.isVipCollection).toBe(false);
+      expect(galaxy.tier).toBe('vip');
+      expect(galaxy.isVipCollection).toBe(true);
+    });
   });
 
   describe('Unlock Verification', () => {
