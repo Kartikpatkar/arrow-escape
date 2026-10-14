@@ -46,6 +46,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
 }) => {
   const [confirmReset, setConfirmReset] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   useEffect(() => {
     if (visible && !adsRemoved) {
@@ -54,6 +55,66 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   }, [visible, adsRemoved]);
 
   if (!visible) return null;
+
+  if (showPrivacy) {
+    return (
+      <View style={styles.backdrop}>
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.boardBorder, maxHeight: '90%' }]}>
+          <View style={styles.headerRow}>
+            <Text style={[styles.title, { color: theme.textPrimary, fontSize: 18 }]}>📜 Privacy Policy</Text>
+            <TouchableOpacity
+              onPress={() => setShowPrivacy(false)}
+              style={[styles.closeBtn, { borderColor: theme.boardBorder }]}
+            >
+              <Text style={[styles.closeBtnText, { color: theme.textSecondary }]}>✕</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView showsVerticalScrollIndicator={false} style={styles.bodyScroll}>
+            <Text style={[styles.policyHeader, { color: theme.textPrimary }]}>Arrow Escape: Arrow Puzzle</Text>
+            <Text style={[styles.policyMeta, { color: theme.textMuted }]}>Developer: Kartik Patkar • com.kartikkp.arrowescape</Text>
+
+            <Text style={[styles.policySectionTitle, { color: theme.accent }]}>1. No Personal Data Collected</Text>
+            <Text style={[styles.policyBody, { color: theme.textSecondary }]}>
+              Arrow Escape does NOT collect, store, or transmit any Personally Identifiable Information (PII) such as your name, email, phone number, contacts, or location. You can play all puzzles anonymously without an account.
+            </Text>
+
+            <Text style={[styles.policySectionTitle, { color: theme.accent }]}>2. Local Device Storage</Text>
+            <Text style={[styles.policyBody, { color: theme.textSecondary }]}>
+              Your level progress, star ratings, daily challenge streaks, hint inventory, and cosmetic choices are stored strictly on your local device. This data is protected by HMAC checksum verification against file corruption.
+            </Text>
+
+            <Text style={[styles.policySectionTitle, { color: theme.accent }]}>3. Device Permissions</Text>
+            <Text style={[styles.policyBody, { color: theme.textSecondary }]}>
+              • Vibrate: Tactile feedback on arrow moves (toggleable anytime in Settings).{'\n'}
+              • Internet: Secure Google Play Services connection for voluntary rewarded ads and in-app purchases.{'\n'}
+              • Notifications: Optional local reminders for daily challenge puzzles.
+            </Text>
+
+            <Text style={[styles.policySectionTitle, { color: theme.accent }]}>4. Google Play Services & Ads</Text>
+            <Text style={[styles.policyBody, { color: theme.textSecondary }]}>
+              In-app purchases (VIP Pass, Remove Ads) are handled exclusively and securely by Google Play Billing. Voluntary rewarded ads are provided via Google AdMob without forced interstitial interruptions.
+            </Text>
+
+            <Text style={[styles.policySectionTitle, { color: theme.accent }]}>5. Data Control & Deletion</Text>
+            <Text style={[styles.policyBody, { color: theme.textSecondary }]}>
+              You can wipe all stored game data at any time by tapping "Reset Game Progress" in Settings, or by clearing app storage in Android Settings.
+            </Text>
+
+            <Text style={[styles.policySectionTitle, { color: theme.accent }]}>6. Contact Us</Text>
+            <Text style={[styles.policyBody, { color: theme.textSecondary, marginBottom: 20 }]}>
+              For any questions regarding this Privacy Policy, please contact developer Kartik Patkar at kartikkp.assets@gmail.com.
+            </Text>
+          </ScrollView>
+          <TouchableOpacity
+            onPress={() => setShowPrivacy(false)}
+            style={[styles.privacyBackBtn, { backgroundColor: theme.accent }]}
+          >
+            <Text style={styles.privacyBackBtnText}>Back to Settings</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.backdrop}>
@@ -264,10 +325,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           )}
         </View>
 
+        {/* Privacy Policy */}
+        <View style={styles.section}>
+          <TouchableOpacity
+            onPress={() => setShowPrivacy(true)}
+            style={[styles.policyBtn, { borderColor: theme.boardBorder }]}
+          >
+            <Text style={[styles.policyBtnText, { color: theme.textPrimary }]}>📜 Privacy Policy</Text>
+            <Text style={[styles.policyChevron, { color: theme.textMuted }]}>›</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Credits */}
         <View style={styles.footer}>
           <Text style={[styles.credits, { color: theme.textMuted }]}>
-            Arrow Escape v1.0.0 • Created with care by Kartik Patkar
+            Arrow Escape: Arrow Puzzle v1.2.3 • Developed by Kartik Patkar
           </Text>
         </View>
         </ScrollView>
@@ -496,5 +568,54 @@ const styles = StyleSheet.create({
   pacingSub: {
     fontSize: 10,
     marginTop: 2,
+  },
+  policyBtn: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  policyBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  policyChevron: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  policyHeader: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  policyMeta: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  policySectionTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  policyBody: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  privacyBackBtn: {
+    marginTop: 12,
+    height: 44,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  privacyBackBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 13,
   },
 });
