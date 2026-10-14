@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.arrowescape.puzzle"
+    namespace = "com.kartikkp.arrowescape"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.arrowescape.puzzle"
+        applicationId "com.kartikkp.arrowescape"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 3
@@ -16,8 +16,17 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            storeFile file('arrowescape-upload-key.jks')
+            storePassword 'arrowescape2026'
+            keyAlias 'arrowescape'
+            keyPassword 'arrowescape2026'
+        }
+    }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

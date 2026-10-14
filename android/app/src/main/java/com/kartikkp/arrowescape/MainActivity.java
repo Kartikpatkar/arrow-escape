@@ -1,4 +1,4 @@
-package com.arrowescape.puzzle;
+package com.kartikkp.arrowescape;
 
 import com.getcapacitor.BridgeActivity;
 
