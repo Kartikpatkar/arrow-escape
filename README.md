@@ -2,7 +2,7 @@
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg?logo=typescript)](https://www.typescriptlang.org/)
 [![React Native Web](https://img.shields.io/badge/React%20Native%20Web-0.21-61DAFB.svg?logo=react)](https://necolas.github.io/react-native-web/)
-[![Jest Tests](https://img.shields.io/badge/Tests-105%20Passed-brightgreen.svg?logo=jest)](https://jestjs.io/)
+[![Jest Tests](https://img.shields.io/badge/Tests-118%20Passed-brightgreen.svg?logo=jest)](https://jestjs.io/)
 [![Solvable Levels](https://img.shields.io/badge/Solvable%20Levels-500%2F500-success.svg)]()
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Web-orange.svg)]()
 

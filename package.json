@@ -1,6 +1,6 @@
 {
   "name": "arrow-escape",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Arrow Escape — Casual logic & spatial puzzle game",
   "main": "dist/index.js",
   "scripts": {

@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.4] - 2026-10-18
+
+### 🚀 Production AdMob Integration & Level Pack Progression Fixes
+
+#### Added & Improved
+- **Native Google Mobile Ads (AdMob) Integration ([admobService.ts](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/src/services/ads/admobService.ts))**:
+  - Integrated `@capacitor-community/admob` native bridge with preloading and pacing controls.
+  - Linked official production AdMob App ID (`ca-app-pub-8070501881159460~4599981673`) in [AndroidManifest.xml](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/android/app/src/main/AndroidManifest.xml).
+  - Configured production ad unit IDs for Banner (`1264381052`), Interstitial (`6551357596`), and Rewarded Video (`8951299388`).
+  - Added Android 13+ Advertising ID permission (`com.google.android.gms.permission.AD_ID`).
+  - Implemented graceful fallback to mock UI for web/headless/offline environments.
+
+#### Fixed
+- **Level Pack Screen Stars & Progress 0% Bug ([worldData.ts](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/src/data/worlds/worldData.ts))**:
+  - Fixed `calculateWorldProgress` to properly read raw star numbers (`Record<number, number>`) from [LevelSelectModal.tsx](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/src/components/game/LevelSelectModal.tsx) without evaluating `rec.stars` on primitive integers.
+  - Progress percentages, cleared count, and star totals now compute and render accurately across all 6 worlds.
+- **Level Select Default World Selection ([LevelSelectModal.tsx](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/src/components/game/LevelSelectModal.tsx))**:
+  - Added reactive `useEffect` synchronization so opening the modal automatically snaps to the world and tab matching the player's active level.
+
+#### Build & Android Configuration
+- **JVM Target Compatibility Aligned**:
+  - Configured Android build files to align Kotlin and Java compile targets to Java 17 toolchain.
+- **Version Bump**:
+  - Bumped `versionCode` to `4` and `versionName` to `1.2.4` for Google Play Closed Testing release.
+
+---
+
 ## [1.2.3] - 2026-10-11
 
 ### 🧠 Analytical Difficulty System & Developer Level Quality Dashboard
