@@ -119,11 +119,12 @@ export function calculateWorldProgress(
   let perfectCount = 0;
 
   for (let lvl = world.startLevel; lvl <= world.endLevel; lvl++) {
-    const rec = levelRecords[lvl];
-    if (rec && rec.stars > 0) {
+    const item = (levelRecords as any)?.[lvl];
+    const stars = typeof item === 'number' ? item : item?.stars || 0;
+    if (stars > 0) {
       completedCount++;
-      starsEarned += rec.stars;
-      if (rec.stars === 3) {
+      starsEarned += stars;
+      if (stars === 3) {
         perfectCount++;
       }
     }
