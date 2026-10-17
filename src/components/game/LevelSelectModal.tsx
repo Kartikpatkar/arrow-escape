@@ -37,8 +37,16 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
   onSelectLevel,
   onClose,
 }) => {
-  const initialWorld = getWorldForLevel(currentLevelId);
+  const initialWorld = getWorldForLevel(currentLevelId || unlockedLevel || 1);
   const [selectedWorldId, setSelectedWorldId] = useState<number>(initialWorld.id);
+
+  React.useEffect(() => {
+    if (visible) {
+      const targetLvl = currentLevelId || unlockedLevel || 1;
+      const targetWorld = getWorldForLevel(targetLvl);
+      setSelectedWorldId(targetWorld.id);
+    }
+  }, [visible, currentLevelId, unlockedLevel]);
 
   if (!visible) return null;
 
