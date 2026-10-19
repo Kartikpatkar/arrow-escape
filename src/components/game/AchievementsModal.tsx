@@ -16,6 +16,7 @@ import {
   PlayGamesProfile,
   playGamesService,
 } from '../../services/playgames/playGamesService';
+import { GoogleSignInModal } from './GoogleSignInModal';
 
 interface AchievementsModalProps {
   visible: boolean;
@@ -32,6 +33,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
   const [achievements, setAchievements] = useState<readonly PlayGamesAchievement[]>(
     () => playGamesService.getAchievements()
   );
+  const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -43,6 +45,12 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
   if (!visible) return null;
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;
+
+  const handleSignedIn = () => {
+    setIsSignInModalOpen(false);
+    setProfile(playGamesService.getProfile());
+    setAchievements(playGamesService.getAchievements());
+  };
 
   return (
     <View style={styles.backdrop}>
@@ -68,13 +76,20 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
         {/* Player Profile Bar */}
         <View style={styles.profileBar}>
           <View style={styles.avatarBadge}>
-            <Text style={styles.avatarIcon}>🏹</Text>
+            <Text style={styles.avatarIcon}>{profile.avatarUrl || '🏹'}</Text>
           </View>
           <View style={styles.profileDetails}>
-            <Text style={styles.gamerTag}>{profile.displayName}</Text>
-            <Text style={styles.profileStatus}>
-              {profile.isSignedIn ? '● Connected to Google Play' : '○ Offline Mode'}
-            </Text>
+            <Text style={styles.gamerTag} numberOfLines={1}>{profile.displayName}</Text>
+            <TouchableOpacity
+              onPress={() => setIsSignInModalOpen(true)}
+              activeOpacity={0.7}
+              style={styles.switchAccountBtn}
+            >
+              <Text style={styles.profileStatus}>
+                {profile.isSignedIn ? '● Connected' : '○ Offline'}{' '}
+                <Text style={styles.switchAccountText}>({profile.isSignedIn ? 'Switch' : 'Sign In'})</Text>
+              </Text>
+            </TouchableOpacity>
           </View>
           <View style={styles.xpBadge}>
             <Text style={styles.xpValue}>{profile.totalXp.toLocaleString()} XP</Text>
@@ -141,6 +156,12 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
           })}
         </ScrollView>
       </View>
+
+      <GoogleSignInModal
+        visible={isSignInModalOpen}
+        onSignedIn={handleSignedIn}
+        onClose={() => setIsSignInModalOpen(false)}
+      />
     </View>
   );
 };
@@ -240,6 +261,13 @@ const styles = StyleSheet.create({
     color: '#34D399',
     marginTop: 2,
     fontWeight: '600',
+  },
+  switchAccountBtn: {
+    marginTop: 1,
+  },
+  switchAccountText: {
+    color: '#60A5FA',
+    fontWeight: '700',
   },
   xpBadge: {
     alignItems: 'flex-end',

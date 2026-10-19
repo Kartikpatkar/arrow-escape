@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.5] - 2026-10-20
+
+### 🎮 Google Play Games Account Sign-In & Hint Modal Fix
+
+#### Fixed
+- **Hint Modal Blank Screen Fix ([HintModal.tsx](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/src/components/game/HintModal.tsx))**:
+  - Replaced React Native Web `<Modal>` portal container with direct absolute in-tree positioning (`position: absolute`, `zIndex: 1000`).
+  - Resolved syntax and layout rendering issue inside Android Capacitor WebView where hint modal rendered blank/invisible.
+
+#### Added & Improved
+- **Google Play Games Interactive Account Selector ([GoogleSignInModal.tsx](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/src/components/game/GoogleSignInModal.tsx))**:
+  - Added native-styled Google Play Games sign-in bottom sheet prompting user on app launch or when tapping Play Games bar / Achievements.
+  - Allows selecting on-device Google accounts or entering custom Google Account / GamerTag.
+  - Supports offline guest play option without blocking gameplay.
+- **Real-Time Achievements & Cloud Save Progress Synchronization ([playGamesService.ts](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/src/services/playgames/playGamesService.ts), [HomeScreen.tsx](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/src/screens/HomeScreen.tsx), [AchievementsModal.tsx](file:///Users/apple/Desktop/Desktop%20Backup/New%20folder/Mobile%20Apps/Arrow%20Escape/arrow-escape/src/components/game/AchievementsModal.tsx))**:
+  - Automatically calculates completed levels and 3-star counts upon app launch, synchronizing with Play Games cloud save and XP achievements.
+  - Added "Switch Account" button directly in the Achievements modal.
+- **Android Release Version Code**:
+  - Bumped `versionCode` to `5` and `versionName` to `1.2.5` in `android/app/build.gradle` and `package.json`.
+
+---
+
 ## [1.2.3] - 2026-10-11
 
 ### 🧠 Analytical Difficulty System & Developer Level Quality Dashboard

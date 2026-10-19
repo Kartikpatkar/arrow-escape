@@ -6,7 +6,6 @@
 
 import React from 'react';
 import {
-  Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -71,14 +70,13 @@ export const HintModal: React.FC<HintModalProps> = ({
   if (!visible) return null;
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={styles.backdrop}>
-        <View
-          style={[
-            styles.container,
-            { backgroundColor: theme.surface, borderColor: theme.boardBorder },
-          ]}
-        >
+    <View style={styles.backdrop}>
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: theme.surface, borderColor: theme.boardBorder },
+        ]}
+      >
           {/* Header */}
           <View style={styles.headerRow}>
             <View style={styles.titleCol}>
@@ -177,17 +175,21 @@ export const HintModal: React.FC<HintModalProps> = ({
           )}
         </View>
       </View>
-    </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   backdrop: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(5, 12, 22, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
+    zIndex: 1000,
   },
   container: {
     width: '100%',

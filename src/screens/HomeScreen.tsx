@@ -40,6 +40,7 @@ import { ReplayGameMode, QuickEscapeDifficulty } from '../services/modes/gameMod
 
 import { playGamesService } from '../services/playgames/playGamesService';
 import { backButtonManager } from '../services/navigation/backButtonHandler';
+import { GoogleSignInModal } from '../components/game/GoogleSignInModal';
 
 interface HomeScreenProps {
   theme?: ColorTheme;
@@ -77,10 +78,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [isCosmeticsOpen, setIsCosmeticsOpen] = useState(false);
   const [isGameModesOpen, setIsGameModesOpen] = useState(false);
   const [isPastDailiesOpen, setIsPastDailiesOpen] = useState(false);
+  const [isGoogleSignInOpen, setIsGoogleSignInOpen] = useState(false);
 
   // Android Hardware Back Button Integration
   useEffect(() => {
     const unregister = backButtonManager.pushHandler(() => {
+      if (isGoogleSignInOpen) { setIsGoogleSignInOpen(false); return true; }
       if (isSettingsOpen) { setIsSettingsOpen(false); return true; }
       if (isLevelSelectOpen) { setIsLevelSelectOpen(false); return true; }
       if (isGameModesOpen) { setIsGameModesOpen(false); return true; }
@@ -92,6 +95,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     });
     return unregister;
   }, [
+    isGoogleSignInOpen,
     isSettingsOpen,
     isLevelSelectOpen,
     isGameModesOpen,
@@ -133,6 +137,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       starsMap[Number(lvlId)] = rec.stars;
     });
     setLevelStars(starsMap);
+
+    // Sync Play Games achievements and Cloud Save
+    const completedLevelsCount = Object.keys(saved.levelRecords).filter(
+      lvlId => saved.levelRecords[Number(lvlId)]?.completed
+    ).length;
+    const threeStarCount = Object.values(saved.levelRecords).filter(
+      rec => rec.stars === 3
+    ).length;
+    playGamesService.syncProgressWithLevelRecords(completedLevelsCount, threeStarCount);
+    await playGamesService.syncWithCloud(saved);
+
+    const profile = playGamesService.getProfile();
+    if (profile.isSignedIn) {
+      setCloudSaveStatus(`Signed in as ${profile.displayName} ✓`);
+    } else {
+      setCloudSaveStatus('Tap to Connect Google Play');
+      if (!playGamesService.hasPromptedSignIn()) {
+        setIsGoogleSignInOpen(true);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -150,19 +174,40 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     return getPlayerStatsSummary(progressData, dailyState);
   }, [progressData, dailyState]);
 
-  const [cloudSaveStatus, setCloudSaveStatus] = useState('Cloud Synced ✓');
+  const [cloudSaveStatus, setCloudSaveStatus] = useState('Checking Google Play...');
 
   const handleManualSave = useCallback(async () => {
     audioService.playClick();
     hapticsService.vibrateLight();
-    setCloudSaveStatus('Syncing...');
+    const profile = playGamesService.getProfile();
+    if (!profile.isSignedIn) {
+      setIsGoogleSignInOpen(true);
+      return;
+    }
+    setCloudSaveStatus('Syncing with Play Games...');
     await saveUserProgress(progressData);
     await playGamesService.saveToCloud(progressData);
-    setCloudSaveStatus('Cloud Synced Just Now ✓');
+    setCloudSaveStatus(`Synced as ${profile.displayName} ✓`);
     setTimeout(() => {
-      setCloudSaveStatus('Cloud Synced ✓');
+      setCloudSaveStatus(`Signed in as ${profile.displayName} ✓`);
     }, 2500);
   }, [progressData]);
+
+  const handleGoogleSignedIn = useCallback(async () => {
+    setIsGoogleSignInOpen(false);
+    audioService.playVictoryFanfare();
+    const profile = playGamesService.getProfile();
+    const saved = await loadUserProgress();
+    const completedLevelsCount = Object.keys(saved.levelRecords).filter(
+      lvlId => saved.levelRecords[Number(lvlId)]?.completed
+    ).length;
+    const threeStarCount = Object.values(saved.levelRecords).filter(
+      rec => rec.stars === 3
+    ).length;
+    playGamesService.syncProgressWithLevelRecords(completedLevelsCount, threeStarCount);
+    await playGamesService.syncWithCloud(saved);
+    setCloudSaveStatus(`Signed in as ${profile.displayName} ✓`);
+  }, []);
 
   // Settings Handlers
   const handleToggleSound = useCallback((enabled: boolean) => {
@@ -521,6 +566,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           setIsCosmeticsOpen(false);
           refreshProgress();
         }}
+      />
+
+      {/* Google Play Games Sign-In & Account Picker */}
+      <GoogleSignInModal
+        visible={isGoogleSignInOpen}
+        onSignedIn={handleGoogleSignedIn}
+        onClose={() => setIsGoogleSignInOpen(false)}
       />
     </SafeAreaView>
   );

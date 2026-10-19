@@ -20,13 +20,38 @@ export interface PlayGamesAchievement {
 export interface PlayGamesProfile {
   readonly playerId: string;
   readonly displayName: string;
+  readonly email?: string;
   readonly avatarUrl?: string;
   readonly isSignedIn: boolean;
   readonly totalXp: number;
+  readonly lastSyncTime?: number | null;
 }
 
 const STORAGE_KEY = 'arrow_escape_play_games_achievements_v1';
 const PROFILE_KEY = 'arrow_escape_play_games_profile_v1';
+const HAS_SEEN_SIGNIN_PROMPT_KEY = 'arrow_escape_play_games_prompted_v1';
+
+export interface GoogleAccountOption {
+  id: string;
+  displayName: string;
+  email: string;
+  avatarIcon: string;
+}
+
+const DEFAULT_ACCOUNTS: GoogleAccountOption[] = [
+  {
+    id: 'g_account_1',
+    displayName: 'Kartik Patkar',
+    email: 'kartikpatkar.play@gmail.com',
+    avatarIcon: '🎯',
+  },
+  {
+    id: 'g_account_2',
+    displayName: 'Arrow Player',
+    email: 'player.arrowescape@gmail.com',
+    avatarIcon: '🏹',
+  },
+];
 
 const DEFAULT_ACHIEVEMENTS: PlayGamesAchievement[] = [
   {
@@ -105,9 +130,10 @@ class PlayGamesService {
   private achievements: PlayGamesAchievement[] = [];
   private profile: PlayGamesProfile = {
     playerId: 'G_847291048',
-    displayName: 'ArrowPlayer#1337',
-    isSignedIn: true,
+    displayName: 'Select Google Account',
+    isSignedIn: false,
     totalXp: 0,
+    lastSyncTime: null,
   };
 
   constructor() {
@@ -154,6 +180,50 @@ class PlayGamesService {
   }
 
   public getProfile(): PlayGamesProfile {
+    return { ...this.profile };
+  }
+
+  public getAvailableAccounts(): GoogleAccountOption[] {
+    return [...DEFAULT_ACCOUNTS];
+  }
+
+  public hasPromptedSignIn(): boolean {
+    try {
+      return localStorage.getItem(HAS_SEEN_SIGNIN_PROMPT_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  public setPromptedSignIn(): void {
+    try {
+      localStorage.setItem(HAS_SEEN_SIGNIN_PROMPT_KEY, 'true');
+    } catch {
+      // ignore
+    }
+  }
+
+  public signInWithAccount(account: { displayName: string; email: string; avatarUrl?: string }): PlayGamesProfile {
+    this.profile = {
+      ...this.profile,
+      displayName: account.displayName.trim() || 'Google Player',
+      email: account.email.trim(),
+      avatarUrl: account.avatarUrl || '🏹',
+      isSignedIn: true,
+      lastSyncTime: Date.now(),
+    };
+    this.setPromptedSignIn();
+    this.saveState();
+    return { ...this.profile };
+  }
+
+  public signOut(): PlayGamesProfile {
+    this.profile = {
+      ...this.profile,
+      isSignedIn: false,
+      displayName: 'Guest Player',
+    };
+    this.saveState();
     return { ...this.profile };
   }
 
